@@ -31,10 +31,13 @@ function harness({ reject } = {}) {
 
 test('路由都在统一前缀下，且能力清单与实现一致', () => {
   const { handlers } = harness()
-  assert.equal(handlers.length, 6)
+  assert.equal(handlers.length, 8)
   for (const r of handlers) assert.ok(r.path.startsWith(API_PREFIX + '/'))
   const health = handlers.find((r) => r.path.endsWith('/health')).run(new URL('http://x/health'))
-  assert.deepEqual(health.body.capabilities.sort(), ['dashboard', 'health', 'metrics', 'profiles', 'sections', 'viewpoints'])
+  assert.deepEqual(
+    health.body.capabilities.sort(),
+    ['candidates', 'dashboard', 'documents', 'health', 'metrics', 'profiles', 'sections', 'viewpoints'],
+  )
 })
 
 test('health 报版本与库统计，但不暴露数据内容', () => {
@@ -120,4 +123,21 @@ test('health 能力清单包含 sections', async () => {
   const { call } = harness()
   const r = await call(`${API_PREFIX}/health`)
   assert.ok(r.json.capabilities.includes('sections'))
+})
+
+test('documents 只读队列：缺 profile 400，有 profile 返回数组', async () => {
+  const { call } = harness()
+  assert.equal((await call(`${API_PREFIX}/documents`)).status, 400)
+  const ok = await call(`${API_PREFIX}/documents`, { url: `${API_PREFIX}/documents?profile=p1` })
+  assert.equal(ok.status, 200)
+  assert.ok(Array.isArray(ok.json.documents))
+})
+
+test('candidates 缺 doc 参数 400，给 doc 返回数组', async () => {
+  const { call } = harness()
+  assert.equal((await call(`${API_PREFIX}/candidates`)).status, 400)
+  assert.equal((await call(`${API_PREFIX}/candidates`, { url: `${API_PREFIX}/candidates?doc=abc` })).status, 400)
+  const ok = await call(`${API_PREFIX}/candidates`, { url: `${API_PREFIX}/candidates?doc=1` })
+  assert.equal(ok.status, 200)
+  assert.ok(Array.isArray(ok.json.candidates))
 })

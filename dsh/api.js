@@ -1,6 +1,7 @@
 // 路由表：纯函数，不依赖宿主、不碰 res。
 // 每个 handler 接收 URL 返回 { status, body }，这样单测不需要假 res，也不会把 HTTP 细节混进业务。
 import { listProfiles, getDashboard, listMetrics, listViewpoints, getSections } from './read-model.js'
+import { listDocuments, listCandidates } from '../import/store.mjs'
 import { describeDatabase } from './db.js'
 
 export const API_PREFIX = '/api/liver-cancer-workbench'
@@ -17,7 +18,7 @@ export function createHandlers({ getDb, version }) {
           ok: true,
           version,
           apiVersion: 'v1',
-          capabilities: ['health', 'profiles', 'dashboard', 'metrics', 'viewpoints', 'sections'],
+          capabilities: ['health', 'profiles', 'dashboard', 'metrics', 'viewpoints', 'sections', 'documents', 'candidates'],
           database: describeDatabase(getDb()),
         },
       }),
@@ -60,6 +61,23 @@ export function createHandlers({ getDb, version }) {
         // 私密内容必须显式 private=1；默认不返回，避免顺手把心理记录带进摘要
         const includePrivate = url.searchParams.get('private') === '1'
         return { status: 200, body: { viewpoints: listViewpoints(getDb(), profileId, { includePrivate }) } }
+      },
+    },
+    {
+      path: `${API_PREFIX}/documents`,
+      run: (url) => {
+        const profileId = url.searchParams.get('profile')
+        if (!profileId) return bad('缺少 profile 参数')
+        // 只读导入队列：文件状态与候选计数。写入走本机导入脚本，不开放 HTTP 上传。
+        return { status: 200, body: { documents: listDocuments(getDb(), profileId) } }
+      },
+    },
+    {
+      path: `${API_PREFIX}/candidates`,
+      run: (url) => {
+        const docId = Number(url.searchParams.get('doc'))
+        if (!Number.isInteger(docId) || docId <= 0) return bad('缺少 doc 参数')
+        return { status: 200, body: { candidates: listCandidates(getDb(), docId) } }
       },
     },
   ]

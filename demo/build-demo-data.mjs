@@ -231,11 +231,24 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   );
 
   // 2) 演示库
+  // 迁移必须按目录顺序全跑，不能硬编码文件名：新增 0003 之后如果只 exec 0001/0002，
+  // 演示库会缺列，而 openDatabase 的"老库引导"看到 profile 表存在会把这些迁移登记成
+  // "已应用"却不执行——结构悄悄落后一个版本，直到某个 SELECT 报 no such column 才暴露。
   const dbPath = join(root, 'demo/demo-data.sqlite');
   try { (await import('node:fs')).unlinkSync(dbPath); } catch {}
   const db = new DatabaseSync(dbPath);
-  db.exec(readFileSync(join(root, 'schema/0001_initial.sql'), 'utf8'));
-  db.exec(readFileSync(join(root, 'schema/0002_metrics_cbc.sql'), 'utf8'));
+  db.exec('PRAGMA foreign_keys = ON');
+  db.exec(`CREATE TABLE IF NOT EXISTS _migration (
+    name TEXT PRIMARY KEY, sha256 TEXT NOT NULL, applied_at TEXT NOT NULL)`);
+  const { readdirSync } = await import('node:fs');
+  const { createHash } = await import('node:crypto');
+  const migrationFiles = readdirSync(join(root, 'schema')).filter((f) => /^\d{4}_.+\.sql$/.test(f)).sort();
+  for (const name of migrationFiles) {
+    const sql = readFileSync(join(root, 'schema', name));
+    db.exec(sql.toString('utf8'));
+    db.prepare('INSERT INTO _migration (name, sha256, applied_at) VALUES (?, ?, ?)')
+      .run(name, createHash('sha256').update(sql).digest('hex'), '2026-10-22T00:00:00+08:00');
+  }
 
   const now = '2026-10-22T00:00:00+08:00';
   db.prepare('INSERT INTO workspace (id, root_path, created_at, updated_at) VALUES (1, NULL, ?, ?)').run(now, now);
