@@ -1,0 +1,174 @@
+{
+  "fixture": "input/import-tests/bingli1.pdf（1 页，扫描件，pypdf 抽取 0 字符）",
+  "method": "macOS Vision（VNRecognizeTextRequest, accurate, zh-Hans+en-US），本地离线，未上传",
+  "page": {
+    "width": 1024,
+    "height": 1137,
+    "upscaledTo": 2400
+  },
+  "summary": {
+    "lines": 31,
+    "meanConfidence": 0.62,
+    "lowConfidenceLines": 4,
+    "verdict": "reject_out_of_domain",
+    "domainGuess": "pancreas",
+    "reason": "病变部位=胰腺、样本类型=穿刺、IHC 为胰腺/腺鳞 panel，不属于肝细胞癌工作台"
+  },
+  "lines": [
+    {
+      "y": 0.976,
+      "confidence": 0.3,
+      "text": "送檢科室："
+    },
+    {
+      "y": 0.967,
+      "confidence": 0.5,
+      "text": "位置："
+    },
+    {
+      "y": 0.969,
+      "confidence": 0.3,
+      "text": "病区："
+    },
+    {
+      "y": 0.945,
+      "confidence": 0.5,
+      "text": "医嘱执行日期："
+    },
+    {
+      "y": 0.943,
+      "confidence": 1,
+      "text": "2023-01-11"
+    },
+    {
+      "y": 0.939,
+      "confidence": 1,
+      "text": "送检医生："
+    },
+    {
+      "y": 0.94,
+      "confidence": 0.5,
+      "text": "床号："
+    },
+    {
+      "y": 0.905,
+      "confidence": 0.5,
+      "text": "肉眼所见："
+    },
+    {
+      "y": 0.879,
+      "confidence": 0.5,
+      "text": "“胰腺”：灰白条索状组织数条，长0.8-1.1cm，直径0.1cm，全（1）多（2）多。"
+    },
+    {
+      "y": 0.86,
+      "confidence": 0.5,
+      "text": "取材：〈医师姓名已脱敏〉；记录：〈医师姓名已脱敏〉；住院总：〈医师姓名已脱敏〉；取材日期：2023-01-09"
+    },
+    {
+      "y": 0.828,
+      "confidence": 0.5,
+      "text": "病理诊断："
+    },
+    {
+      "y": 0.801,
+      "confidence": 0.5,
+      "text": "病变部位：胰腺"
+    },
+    {
+      "y": 0.78,
+      "confidence": 0.5,
+      "text": "样本类型：穿刺"
+    },
+    {
+      "y": 0.759,
+      "confidence": 0.5,
+      "text": "病理诊断：查见肿瘤。建议行免疫组化协助分析。"
+    },
+    {
+      "y": 0.741,
+      "confidence": 0.5,
+      "text": "以上报告于2023-01-10 11:46发出。"
+    },
+    {
+      "y": 0.703,
+      "confidence": 0.5,
+      "text": "再发报告："
+    },
+    {
+      "y": 0.681,
+      "confidence": 0.5,
+      "text": "〈胰腺>浸润性癌，大部分呈鳞状分化，灶区伴腺样分化。穿刺组织代表性有限，请结合临床"
+    },
+    {
+      "y": 0.666,
+      "confidence": 1,
+      "text": "综合分析。"
+    },
+    {
+      "y": 0.647,
+      "confidence": 0.5,
+      "text": "免疫组化结果：CK（Pan）（+）、CK7（大部+）、CK19（+）、CD56（-）、CgA（-）、K1-67"
+    },
+    {
+      "y": 0.625,
+      "confidence": 0.3,
+      "text": "（+、40%）、Syn（-）、MUC-1（部分+）、p40（部分+）。"
+    },
+    {
+      "y": 0.231,
+      "confidence": 0.5,
+      "text": "诊断医生："
+    },
+    {
+      "y": 0.235,
+      "confidence": 0.3,
+      "text": "张备"
+    },
+    {
+      "y": 0.246,
+      "confidence": 0.5,
+      "text": "打印者："
+    },
+    {
+      "y": 0.247,
+      "confidence": 0.5,
+      "text": "本"
+    },
+    {
+      "y": 0.187,
+      "confidence": 1,
+      "text": "〈电话已脱敏〉2"
+    },
+    {
+      "y": 0.166,
+      "confidence": 0.5,
+      "text": "病理收发室：〈电话已脱敏〉0 病理诊断查询："
+    },
+    {
+      "y": 0.161,
+      "confidence": 1,
+      "text": "门诊细胞病理：〈电话已脱敏〉5"
+    },
+    {
+      "y": 0.148,
+      "confidence": 1,
+      "text": "会诊接待：〈电话已脱敏〉8"
+    },
+    {
+      "y": 0.13,
+      "confidence": 1,
+      "text": "通讯地址：〈地址已脱敏〉〈医院已脱敏〉病理科"
+    },
+    {
+      "y": 0.113,
+      "confidence": 1,
+      "text": "邮政地址：〈邮编已脱敏〉"
+    },
+    {
+      "y": 0.085,
+      "confidence": 1,
+      "text": "此报告仅反映送检标本的情况"
+    }
+  ]
+}
