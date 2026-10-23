@@ -3,6 +3,8 @@
 - 版本：v0.3.2（2026-10-24）
 - 代码：`import/`（4 个模块）+ `scripts/import-doc.mjs`（命令行）+ `dsh/api.js` 两条只读路由
 - 单测：`test/import.test.mjs`（25 条）、`test/store.test.mjs`（13 条）
+- **已回流脚手架**：`xyb-workbench-starter/docs/29-DOCUMENT-IMPORT-PIPELINE.md`（五段流水线、三级闸门、IM01–IM14 验收）。
+  本文件是小甘宝的具体实现与踩坑记录；脚手架那份是换病种可照做的通用规则，改通用部分请改脚手架。
 
 ## 1. 这条链路解决什么
 
