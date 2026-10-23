@@ -1,0 +1,1348 @@
+{
+  "schemaVersion": "1.0",
+  "query": {
+    "condition": "肝细胞癌",
+    "limit": 20,
+    "offset": 0,
+    "keywords": [
+      "hepatocellular carcinoma",
+      "HCC",
+      "liver cancer"
+    ]
+  },
+  "statuses": [
+    {
+      "sourceId": "chinadrugtrials",
+      "sourceLabel": "ChinaDrugTrials（受控归档）",
+      "state": "SUCCESS",
+      "reasonCode": "OK",
+      "explanation": "来源返回 20 条记录。",
+      "attempted": true,
+      "elapsedMs": 319,
+      "freshness": {
+        "kind": "controlled_session_archive",
+        "retrievedAt": "2026-10-22T13:00:27.325Z",
+        "staleAfterDays": 30,
+        "stale": false
+      },
+      "coverage": {
+        "scope": "本地受控增量归档；仅同步时联网，且需要合法的用户会话。",
+        "zeroResultMeaning": "仅表示本地受控归档中无该关键词命中，不代表官网无该试验。",
+        "indexOrArchiveOnly": true
+      },
+      "completeness": {
+        "isLowerBound": false,
+        "warnings": [
+          "上游共 16 页、约 308 条记录，本次只取第 1-1 页；受控来源不进行大规模抓取，如需完整数据请运行 sync_chinadrugtrials。",
+          "结果可能被截断，未覆盖来源全部命中。"
+        ],
+        "upstreamReportedTotal": 308,
+        "rowsReturned": 308,
+        "recordsIncomplete": true
+      },
+      "resultCount": 20,
+      "truncated": true,
+      "requestedLimit": 200
+    },
+    {
+      "sourceId": "xyb_chinadrugtrials_archive",
+      "sourceLabel": "XYB ChinaDrugTrials 数据包（只读离线）",
+      "state": "SUCCESS",
+      "reasonCode": "OK",
+      "explanation": "来源返回 5 条记录。",
+      "attempted": true,
+      "elapsedMs": 153,
+      "freshness": {
+        "kind": "offline_archive",
+        "scrapedAt": "2026-10-04T13:25:17.882568",
+        "dataCutoff": "2026-09-29T07:59:24.275394",
+        "cutoffSource": "各数据包内记录级 scrape_time 与 summary.json 声明（较新者）；覆盖率 已逐条读取记录",
+        "updateHint": "该数据包由小胰宝社区按关键词抓取并共同维护，非官方实时数据。如需更新，请用社区的抓取流程生成新的 output 数据包后，通过 configure --xyb-archive <output 目录> 指向它，或向仓库提交更新的数据包。",
+        "staleAfterDays": 90,
+        "stale": false
+      },
+      "coverage": {
+        "scope": "只读离线数据包，覆盖范围取决于包内查询关键词与页数；数据截止日由包内记录时间戳推导，该日期之后登记的试验在包内不可见。",
+        "zeroResultMeaning": "仅表示该离线数据包内无命中；本包是按关键词抓取的子集，不是全量 ChinaDrugTrials，也不包含数据截止日之后登记的试验。",
+        "indexOrArchiveOnly": true
+      },
+      "completeness": {
+        "isLowerBound": false,
+        "warnings": [
+          "已跳过 2 个不可用数据包：B7-H3_CD276_招募中（缺少 summary.json 清单，视为未完成的采集快照）；FG-M108（缺少 summary.json 清单，视为未完成的采集快照）。这些包内的记录未纳入本次检索。",
+          "本数据包数据截止 2026-09-29，记录抓取时间跨度为 2026-08-14 至 2026-09-29；该日期之后登记的试验在包内不可见，零结果不能证明不存在。数据包由小胰宝社区共同维护，可用 doctor 查看并更新。",
+          "packages_skipped:2"
+        ],
+        "upstreamReportedTotal": 139,
+        "rowsReturned": 5,
+        "recordsIncomplete": true
+      },
+      "resultCount": 5,
+      "truncated": false,
+      "requestedLimit": 200
+    },
+    {
+      "sourceId": "chictr_online",
+      "sourceLabel": "ChiCTR 在线",
+      "state": "SUCCESS",
+      "reasonCode": "OK",
+      "explanation": "来源返回 10 条记录。",
+      "attempted": true,
+      "elapsedMs": 14172,
+      "freshness": {
+        "kind": "cached_network",
+        "retrievedAt": "2026-10-22T13:00:41.178Z",
+        "staleAfterDays": 7,
+        "stale": false
+      },
+      "coverage": {
+        "scope": "在线查询，受 WAF、会话有效期与限流约束。",
+        "zeroResultMeaning": "仅表示本次在线查询无命中；结果依赖短期会话与缓存。",
+        "indexOrArchiveOnly": false
+      },
+      "completeness": {
+        "isLowerBound": false,
+        "warnings": [],
+        "rowsReturned": 10,
+        "recordsIncomplete": false
+      },
+      "resultCount": 10,
+      "truncated": false,
+      "requestedLimit": 200
+    },
+    {
+      "sourceId": "chictr_pancreatic_archive",
+      "sourceLabel": "ChiCTR 胰腺癌离线语料",
+      "state": "NEEDS_SETUP",
+      "reasonCode": "PATH_MISSING",
+      "explanation": "路径不存在：/nonexistent/x.db",
+      "attempted": true,
+      "elapsedMs": 1,
+      "freshness": {
+        "kind": "offline_archive",
+        "staleAfterDays": 90
+      },
+      "coverage": {
+        "scope": "仅胰腺癌专题离线语料，非 ChiCTR 全量；数据截止日由语料内时间戳推导，该日期之后登记的试验在语料中不可见。",
+        "zeroResultMeaning": "仅表示该胰腺癌专题语料内无命中；不覆盖 ChiCTR 全量与其他疾病领域，也不包含数据截止日之后登记的试验。",
+        "indexOrArchiveOnly": true
+      },
+      "completeness": {
+        "isLowerBound": false,
+        "warnings": []
+      },
+      "fixHint": "通过 configure 指向正确的文件，或先运行 bootstrap。"
+    },
+    {
+      "sourceId": "ctv",
+      "sourceLabel": "ClinicalTrials.gov（CTV 本地索引）",
+      "state": "NO_RESULTS",
+      "reasonCode": "EMPTY_RESULT_SET",
+      "explanation": "仅表示本地 SQLite/FTS 索引未命中，不代表 ClinicalTrials.gov 上不存在该试验。",
+      "attempted": true,
+      "elapsedMs": 3346,
+      "freshness": {
+        "kind": "local_index",
+        "retrievedAt": "2026-10-22T13:00:30.352Z",
+        "staleAfterDays": 30,
+        "stale": false
+      },
+      "coverage": {
+        "scope": "本地全文索引；未同步的记录不可见。",
+        "zeroResultMeaning": "仅表示本地 SQLite/FTS 索引未命中，不代表 ClinicalTrials.gov 上不存在该试验。",
+        "indexOrArchiveOnly": true
+      },
+      "completeness": {
+        "isLowerBound": false,
+        "warnings": [
+          "本地索引中 0 命中：该索引只覆盖 1434 条研究（其中 1434 条有完整详情），0 命中不等于没有相关试验。关键词检索请优先用 ClinicalTrials.gov；也可按 UTN/NCT/slug 用 get_study_detail 直查，或用 import_csv_export / sync_sitemap 扩大覆盖后再检索。"
+        ],
+        "upstreamReportedTotal": 0,
+        "rowsReturned": 0,
+        "recordsIncomplete": false
+      },
+      "resultCount": 0,
+      "truncated": false
+    },
+    {
+      "sourceId": "ictrp",
+      "sourceLabel": "WHO ICTRP",
+      "state": "FAILED",
+      "reasonCode": "UPSTREAM_UNKNOWN_ERROR",
+      "explanation": "ictrp_search 上游返回错误：上游工具返回 isError，但未提供错误详情。",
+      "attempted": true,
+      "elapsedMs": 333,
+      "freshness": {
+        "kind": "cached_network",
+        "staleAfterDays": 7
+      },
+      "coverage": {
+        "scope": "全球登记库聚合；已知上游结果不完整。",
+        "zeroResultMeaning": "仅表示本次 ICTRP 查询无返回；上游存在已知静默缺失，零结果不能作为“不存在”的结论。",
+        "indexOrArchiveOnly": false
+      },
+      "completeness": {
+        "isLowerBound": true,
+        "warnings": []
+      }
+    }
+  ],
+  "coverage": {
+    "queried": [
+      "chinadrugtrials",
+      "xyb_chinadrugtrials_archive",
+      "chictr_online",
+      "ctv"
+    ],
+    "unavailable": [
+      "chictr_pancreatic_archive",
+      "ictrp"
+    ],
+    "notQueried": []
+  },
+  "completeness": {
+    "isComplete": false,
+    "warnings": [
+      "chinadrugtrials: 上游共 16 页、约 308 条记录，本次只取第 1-1 页；受控来源不进行大规模抓取，如需完整数据请运行 sync_chinadrugtrials。",
+      "chinadrugtrials: 结果可能被截断，未覆盖来源全部命中。",
+      "xyb_chinadrugtrials_archive: 已跳过 2 个不可用数据包：B7-H3_CD276_招募中（缺少 summary.json 清单，视为未完成的采集快照）；FG-M108（缺少 summary.json 清单，视为未完成的采集快照）。这些包内的记录未纳入本次检索。",
+      "xyb_chinadrugtrials_archive: 本数据包数据截止 2026-09-29，记录抓取时间跨度为 2026-08-14 至 2026-09-29；该日期之后登记的试验在包内不可见，零结果不能证明不存在。数据包由小胰宝社区共同维护，可用 doctor 查看并更新。",
+      "xyb_chinadrugtrials_archive: packages_skipped:2",
+      "ctv: 本地索引中 0 命中：该索引只覆盖 1434 条研究（其中 1434 条有完整详情），0 命中不等于没有相关试验。关键词检索请优先用 ClinicalTrials.gov；也可按 UTN/NCT/slug 用 get_study_detail 直查，或用 import_csv_export / sync_sitemap 扩大覆盖后再检索。"
+    ]
+  },
+  "totalRecords": 34,
+  "records": [
+    {
+      "recordId": "chinadrugtrials:CTR20263829",
+      "source": {
+        "id": "chinadrugtrials",
+        "label": "ChinaDrugTrials（受控归档）",
+        "sourceRecordId": "CTR20263829"
+      },
+      "registryNumbers": [
+        {
+          "registry": "CTR",
+          "value": "CTR20263829",
+          "primary": true
+        }
+      ],
+      "provenance": {
+        "rawEvidenceRefs": [],
+        "piiLevel": "public_source_may_contain_pii",
+        "retrievedAt": "2026-10-22T13:00:27.325Z"
+      },
+      "title": "ACE723用于含免疫检查点抑制剂的标准的系统治疗失败进展的晚期HCC患者的I期研究",
+      "conditionOrDisease": [
+        "肝细胞癌"
+      ],
+      "interventions": [
+        "ACE723"
+      ],
+      "recruitmentStatus": "进行中 尚未招募",
+      "sourceUrl": "https://www.chinadrugtrials.org.cn/clinicaltrials.searchlistdetail.dhtml"
+    },
+    {
+      "recordId": "chictr_online:337773",
+      "source": {
+        "id": "chictr_online",
+        "label": "ChiCTR 在线",
+        "sourceRecordId": "337773"
+      },
+      "registryNumbers": [
+        {
+          "registry": "CHICTR",
+          "value": "ChiCTR2600133673",
+          "primary": true
+        }
+      ],
+      "provenance": {
+        "rawEvidenceRefs": [],
+        "piiLevel": "public_source_may_contain_pii",
+        "retrievedAt": "2026-10-22T13:00:41.178Z"
+      },
+      "title": "APRI指数与肝细胞癌患者肝切除术后AKI的关联",
+      "studyType": "观察性研究",
+      "sponsorOrInstitution": [
+        "苏州大学附属第一医院"
+      ],
+      "dates": {
+        "registered": "2026/09/30"
+      },
+      "sourceUrl": "https://www.chictr.org.cn/showproj.html?proj=337773"
+    },
+    {
+      "recordId": "chinadrugtrials:CTR20261108",
+      "source": {
+        "id": "chinadrugtrials",
+        "label": "ChinaDrugTrials（受控归档）",
+        "sourceRecordId": "CTR20261108"
+      },
+      "registryNumbers": [
+        {
+          "registry": "CTR",
+          "value": "CTR20261108",
+          "primary": true
+        }
+      ],
+      "provenance": {
+        "rawEvidenceRefs": [],
+        "piiLevel": "public_source_may_contain_pii",
+        "retrievedAt": "2026-10-22T13:00:27.325Z"
+      },
+      "title": "CVM-1118 联合信迪利单抗 + TACE 治疗不可切除肝细胞癌的 IIa 期研究",
+      "conditionOrDisease": [
+        "不可切除/非转移性肝细胞癌"
+      ],
+      "interventions": [
+        "CVM-1118胶囊"
+      ],
+      "recruitmentStatus": "进行中 尚未招募",
+      "sourceUrl": "https://www.chinadrugtrials.org.cn/clinicaltrials.searchlistdetail.dhtml"
+    },
+    {
+      "recordId": "chinadrugtrials:CTR20263532",
+      "source": {
+        "id": "chinadrugtrials",
+        "label": "ChinaDrugTrials（受控归档）",
+        "sourceRecordId": "CTR20263532"
+      },
+      "registryNumbers": [
+        {
+          "registry": "CTR",
+          "value": "CTR20263532",
+          "primary": true
+        }
+      ],
+      "provenance": {
+        "rawEvidenceRefs": [],
+        "piiLevel": "public_source_may_contain_pii",
+        "retrievedAt": "2026-10-22T13:00:27.325Z"
+      },
+      "title": "JS207联合JS007肝细胞癌Ⅲ期临床研究",
+      "conditionOrDisease": [
+        "不可切除的局部晚期、复发或转移性肝细胞癌"
+      ],
+      "interventions": [
+        "注射用JS207"
+      ],
+      "recruitmentStatus": "进行中 尚未招募",
+      "sourceUrl": "https://www.chinadrugtrials.org.cn/clinicaltrials.searchlistdetail.dhtml"
+    },
+    {
+      "recordId": "chictr_online:344249",
+      "source": {
+        "id": "chictr_online",
+        "label": "ChiCTR 在线",
+        "sourceRecordId": "344249"
+      },
+      "registryNumbers": [
+        {
+          "registry": "CHICTR",
+          "value": "ChiCTR2600133123",
+          "primary": true
+        }
+      ],
+      "provenance": {
+        "rawEvidenceRefs": [],
+        "piiLevel": "public_source_may_contain_pii",
+        "retrievedAt": "2026-10-22T13:00:41.178Z"
+      },
+      "title": "NRT6003注射液联合靶向药物和免疫检查点抑制剂治疗不可切除肝细胞癌的安全性和有效性研究：一项前瞻性、开放、单臂的探索性研究",
+      "studyType": "干预性研究",
+      "sponsorOrInstitution": [
+        "四川大学华西医院"
+      ],
+      "dates": {
+        "registered": "2026/09/22"
+      },
+      "sourceUrl": "https://www.chictr.org.cn/showproj.html?proj=344249"
+    },
+    {
+      "recordId": "chinadrugtrials:CTR20263232",
+      "source": {
+        "id": "chinadrugtrials",
+        "label": "ChinaDrugTrials（受控归档）",
+        "sourceRecordId": "CTR20263232"
+      },
+      "registryNumbers": [
+        {
+          "registry": "CTR",
+          "value": "CTR20263232",
+          "primary": true
+        }
+      ],
+      "provenance": {
+        "rawEvidenceRefs": [
+          {
+            "kind": "raw_html",
+            "path": "output/胰腺癌/raw/CTR20263232_detail.html",
+            "contentHash": "6ee23328def33d6715b595d3b87e08816130a86a342f991340368846a1d4a1e3"
+          }
+        ],
+        "piiLevel": "public_source_may_contain_pii",
+        "retrievedAt": "2026-10-22T13:00:27.325Z"
+      },
+      "title": "R01注射液的I期临床研究",
+      "conditionOrDisease": [
+        "根治术后具高危复发风险的恶性实体瘤患者，主要包括胰腺癌、食管癌、肝细胞癌、胆道恶性肿瘤、胃癌、结直肠癌等"
+      ],
+      "interventions": [
+        "R01注射液"
+      ],
+      "recruitmentStatus": "进行中 招募中",
+      "sourceUrl": "https://www.chinadrugtrials.org.cn/clinicaltrials.searchlistdetail.dhtml",
+      "sponsorOrInstitution": [
+        "1"
+      ],
+      "mergedFrom": [
+        "chinadrugtrials:CTR20263232",
+        "xyb_chinadrugtrials_archive:CTR20263232"
+      ],
+      "sourceLabels": [
+        "ChinaDrugTrials（受控归档）",
+        "XYB ChinaDrugTrials 数据包（只读离线）"
+      ],
+      "perSource": [
+        {
+          "recordId": "chinadrugtrials:CTR20263232",
+          "sourceId": "chinadrugtrials",
+          "sourceRecordId": "CTR20263232"
+        },
+        {
+          "recordId": "xyb_chinadrugtrials_archive:CTR20263232",
+          "sourceId": "xyb_chinadrugtrials_archive",
+          "sourceRecordId": "CTR20263232"
+        }
+      ]
+    },
+    {
+      "recordId": "chinadrugtrials:CTR20260323",
+      "source": {
+        "id": "chinadrugtrials",
+        "label": "ChinaDrugTrials（受控归档）",
+        "sourceRecordId": "CTR20260323"
+      },
+      "registryNumbers": [
+        {
+          "registry": "CTR",
+          "value": "CTR20260323",
+          "primary": true
+        }
+      ],
+      "provenance": {
+        "rawEvidenceRefs": [],
+        "piiLevel": "public_source_may_contain_pii",
+        "retrievedAt": "2026-10-22T13:00:27.325Z"
+      },
+      "title": "SH006注射液联合用药对比瑞戈非尼治疗晚期肝细胞癌的II/III期临床研究",
+      "conditionOrDisease": [
+        "肝细胞癌"
+      ],
+      "interventions": [
+        "SH006注射液"
+      ],
+      "recruitmentStatus": "进行中 尚未招募",
+      "sourceUrl": "https://www.chinadrugtrials.org.cn/clinicaltrials.searchlistdetail.dhtml"
+    },
+    {
+      "recordId": "chinadrugtrials:CTR20260968",
+      "source": {
+        "id": "chinadrugtrials",
+        "label": "ChinaDrugTrials（受控归档）",
+        "sourceRecordId": "CTR20260968"
+      },
+      "registryNumbers": [
+        {
+          "registry": "CTR",
+          "value": "CTR20260968",
+          "primary": true
+        }
+      ],
+      "provenance": {
+        "rawEvidenceRefs": [],
+        "piiLevel": "public_source_may_contain_pii",
+        "retrievedAt": "2026-10-22T13:00:27.325Z"
+      },
+      "title": "SHR-2524联合贝伐珠单抗一线治疗晚期肝细胞癌的I期临床研究",
+      "conditionOrDisease": [
+        "晚期肝细胞癌"
+      ],
+      "interventions": [
+        "SHR-2524注射液"
+      ],
+      "recruitmentStatus": "进行中 招募中",
+      "sourceUrl": "https://www.chinadrugtrials.org.cn/clinicaltrials.searchlistdetail.dhtml"
+    },
+    {
+      "recordId": "chinadrugtrials:CTR20262591",
+      "source": {
+        "id": "chinadrugtrials",
+        "label": "ChinaDrugTrials（受控归档）",
+        "sourceRecordId": "CTR20262591"
+      },
+      "registryNumbers": [
+        {
+          "registry": "CTR",
+          "value": "CTR20262591",
+          "primary": true
+        }
+      ],
+      "provenance": {
+        "rawEvidenceRefs": [],
+        "piiLevel": "public_source_may_contain_pii",
+        "retrievedAt": "2026-10-22T13:00:27.325Z"
+      },
+      "title": "SHR-8068联合阿得贝利单抗、贝伐珠单抗和TACE在不可根治肝细胞癌中的III期临床研究",
+      "conditionOrDisease": [
+        "肝细胞癌"
+      ],
+      "interventions": [
+        "SHR-8068注射液"
+      ],
+      "recruitmentStatus": "进行中 尚未招募",
+      "sourceUrl": "https://www.chinadrugtrials.org.cn/clinicaltrials.searchlistdetail.dhtml"
+    },
+    {
+      "recordId": "chinadrugtrials:CTR20262512",
+      "source": {
+        "id": "chinadrugtrials",
+        "label": "ChinaDrugTrials（受控归档）",
+        "sourceRecordId": "CTR20262512"
+      },
+      "registryNumbers": [
+        {
+          "registry": "CTR",
+          "value": "CTR20262512",
+          "primary": true
+        }
+      ],
+      "provenance": {
+        "rawEvidenceRefs": [],
+        "piiLevel": "public_source_may_contain_pii",
+        "retrievedAt": "2026-10-22T13:00:27.325Z"
+      },
+      "title": "SHR-8068联合阿得贝利单抗及阿帕替尼用于肝细胞癌围术期治疗的II期临床研究",
+      "conditionOrDisease": [
+        "肝细胞癌围术期治疗"
+      ],
+      "interventions": [
+        "SHR-8068注射液"
+      ],
+      "recruitmentStatus": "进行中 尚未招募",
+      "sourceUrl": "https://www.chinadrugtrials.org.cn/clinicaltrials.searchlistdetail.dhtml"
+    },
+    {
+      "recordId": "chinadrugtrials:CTR20262952",
+      "source": {
+        "id": "chinadrugtrials",
+        "label": "ChinaDrugTrials（受控归档）",
+        "sourceRecordId": "CTR20262952"
+      },
+      "registryNumbers": [
+        {
+          "registry": "CTR",
+          "value": "CTR20262952",
+          "primary": true
+        }
+      ],
+      "provenance": {
+        "rawEvidenceRefs": [],
+        "piiLevel": "public_source_may_contain_pii",
+        "retrievedAt": "2026-10-22T13:00:27.325Z"
+      },
+      "title": "SYS6090注射液治疗肝细胞癌的Ib/Ⅱ期研究",
+      "conditionOrDisease": [
+        "肝细胞癌"
+      ],
+      "interventions": [
+        "SYS6090注射液"
+      ],
+      "recruitmentStatus": "进行中 招募中",
+      "sourceUrl": "https://www.chinadrugtrials.org.cn/clinicaltrials.searchlistdetail.dhtml"
+    },
+    {
+      "recordId": "chictr_online:338770",
+      "source": {
+        "id": "chictr_online",
+        "label": "ChiCTR 在线",
+        "sourceRecordId": "338770"
+      },
+      "registryNumbers": [
+        {
+          "registry": "CHICTR",
+          "value": "ChiCTR2600133413",
+          "primary": true
+        }
+      ],
+      "provenance": {
+        "rawEvidenceRefs": [],
+        "piiLevel": "public_source_may_contain_pii",
+        "retrievedAt": "2026-10-22T13:00:41.178Z"
+      },
+      "title": "TACE联合靶向及免疫治疗高危不可切除肝细胞癌的疗效评价及人群选择：多中心真实世界回顾性研究",
+      "studyType": "观察性研究",
+      "sponsorOrInstitution": [
+        "空军军医大学第一附属医院"
+      ],
+      "dates": {
+        "registered": "2026/09/26"
+      },
+      "sourceUrl": "https://www.chictr.org.cn/showproj.html?proj=338770"
+    },
+    {
+      "recordId": "chinadrugtrials:CTR20261606",
+      "source": {
+        "id": "chinadrugtrials",
+        "label": "ChinaDrugTrials（受控归档）",
+        "sourceRecordId": "CTR20261606"
+      },
+      "registryNumbers": [
+        {
+          "registry": "CTR",
+          "value": "CTR20261606",
+          "primary": true
+        }
+      ],
+      "provenance": {
+        "rawEvidenceRefs": [],
+        "piiLevel": "public_source_may_contain_pii",
+        "retrievedAt": "2026-10-22T13:00:27.325Z"
+      },
+      "title": "VRT106联合卡瑞利珠单抗与阿帕替尼用于免疫检查点抑制剂治疗失败的晚期肝细胞癌的多中心、开放II/III期临床试验",
+      "conditionOrDisease": [
+        "肝细胞癌"
+      ],
+      "interventions": [
+        "注射用VRT106"
+      ],
+      "recruitmentStatus": "进行中 招募中",
+      "sourceUrl": "https://www.chinadrugtrials.org.cn/clinicaltrials.searchlistdetail.dhtml"
+    },
+    {
+      "recordId": "chinadrugtrials:CTR20261875",
+      "source": {
+        "id": "chinadrugtrials",
+        "label": "ChinaDrugTrials（受控归档）",
+        "sourceRecordId": "CTR20261875"
+      },
+      "registryNumbers": [
+        {
+          "registry": "CTR",
+          "value": "CTR20261875",
+          "primary": true
+        }
+      ],
+      "provenance": {
+        "rawEvidenceRefs": [],
+        "piiLevel": "public_source_may_contain_pii",
+        "retrievedAt": "2026-10-22T13:00:27.325Z"
+      },
+      "title": "WGI-0301联合纳武利尤单抗在晚期肝细胞癌及肾细胞癌患者中的安全性、耐受性、药代动力学、药效学和有效性的多中心、开放标签II期临床研究",
+      "conditionOrDisease": [
+        "晚期肝细胞癌、晚期肾细胞癌"
+      ],
+      "interventions": [
+        "WGI-0301"
+      ],
+      "recruitmentStatus": "进行中 尚未招募",
+      "sourceUrl": "https://www.chinadrugtrials.org.cn/clinicaltrials.searchlistdetail.dhtml"
+    },
+    {
+      "recordId": "chinadrugtrials:CTR20263448",
+      "source": {
+        "id": "chinadrugtrials",
+        "label": "ChinaDrugTrials（受控归档）",
+        "sourceRecordId": "CTR20263448"
+      },
+      "registryNumbers": [
+        {
+          "registry": "CTR",
+          "value": "CTR20263448",
+          "primary": true
+        }
+      ],
+      "provenance": {
+        "rawEvidenceRefs": [],
+        "piiLevel": "public_source_may_contain_pii",
+        "retrievedAt": "2026-10-22T13:00:27.325Z"
+      },
+      "title": "ZG005联合贝伐珠单抗对照信迪利单抗联合贝伐珠单抗用于晚期肝细胞癌一线治疗的临床研究",
+      "conditionOrDisease": [
+        "晚期肝细胞癌"
+      ],
+      "interventions": [
+        "注射用ZG005"
+      ],
+      "recruitmentStatus": "进行中 尚未招募",
+      "sourceUrl": "https://www.chinadrugtrials.org.cn/clinicaltrials.searchlistdetail.dhtml"
+    },
+    {
+      "recordId": "chinadrugtrials:CTR20260344",
+      "source": {
+        "id": "chinadrugtrials",
+        "label": "ChinaDrugTrials（受控归档）",
+        "sourceRecordId": "CTR20260344"
+      },
+      "registryNumbers": [
+        {
+          "registry": "CTR",
+          "value": "CTR20260344",
+          "primary": true
+        }
+      ],
+      "provenance": {
+        "rawEvidenceRefs": [],
+        "piiLevel": "public_source_may_contain_pii",
+        "retrievedAt": "2026-10-22T13:00:27.325Z"
+      },
+      "title": "γδ-T细胞注射液治疗晚期肝细胞癌安全性、耐受性及初步疗效的I期临床研究",
+      "conditionOrDisease": [
+        "原发性肝细胞癌"
+      ],
+      "interventions": [
+        "γδ-T细胞注射液"
+      ],
+      "recruitmentStatus": "进行中 招募中",
+      "sourceUrl": "https://www.chinadrugtrials.org.cn/clinicaltrials.searchlistdetail.dhtml"
+    },
+    {
+      "recordId": "chinadrugtrials:CTR20261876",
+      "source": {
+        "id": "chinadrugtrials",
+        "label": "ChinaDrugTrials（受控归档）",
+        "sourceRecordId": "CTR20261876"
+      },
+      "registryNumbers": [
+        {
+          "registry": "CTR",
+          "value": "CTR20261876",
+          "primary": true
+        }
+      ],
+      "provenance": {
+        "rawEvidenceRefs": [],
+        "piiLevel": "public_source_may_contain_pii",
+        "retrievedAt": "2026-10-22T13:00:27.325Z"
+      },
+      "title": "一项在一线晚期或不可切除的肝细胞癌(HCC) 参与者中评估Pumitamig 单药或与伊匹木单抗联合给药的研究",
+      "conditionOrDisease": [
+        "一线晚期或不可切除的肝细胞癌"
+      ],
+      "interventions": [
+        "Pumitamig注射液"
+      ],
+      "recruitmentStatus": "进行中 尚未招募",
+      "sourceUrl": "https://www.chinadrugtrials.org.cn/clinicaltrials.searchlistdetail.dhtml"
+    },
+    {
+      "recordId": "chinadrugtrials:CTR20263236",
+      "source": {
+        "id": "chinadrugtrials",
+        "label": "ChinaDrugTrials（受控归档）",
+        "sourceRecordId": "CTR20263236"
+      },
+      "registryNumbers": [
+        {
+          "registry": "CTR",
+          "value": "CTR20263236",
+          "primary": true
+        }
+      ],
+      "provenance": {
+        "rawEvidenceRefs": [],
+        "piiLevel": "public_source_may_contain_pii",
+        "retrievedAt": "2026-10-22T13:00:27.325Z"
+      },
+      "title": "一项在不可切除的局部晚期或转移性肝细胞癌成人研究参与者中评估研究药物 PF-08634404 单药治疗和联合治疗的研究",
+      "conditionOrDisease": [
+        "肝细胞癌"
+      ],
+      "interventions": [
+        "PF-08634404"
+      ],
+      "recruitmentStatus": "进行中 招募中",
+      "sourceUrl": "https://www.chinadrugtrials.org.cn/clinicaltrials.searchlistdetail.dhtml"
+    },
+    {
+      "recordId": "chinadrugtrials:CTR20261299",
+      "source": {
+        "id": "chinadrugtrials",
+        "label": "ChinaDrugTrials（受控归档）",
+        "sourceRecordId": "CTR20261299"
+      },
+      "registryNumbers": [
+        {
+          "registry": "CTR",
+          "value": "CTR20261299",
+          "primary": true
+        }
+      ],
+      "provenance": {
+        "rawEvidenceRefs": [],
+        "piiLevel": "public_source_may_contain_pii",
+        "retrievedAt": "2026-10-22T13:00:27.325Z"
+      },
+      "title": "一项旨在探究 BAY 3547926 药物安全性，以及其在晚期肝癌受试者中疗效的首次人体临床试验",
+      "conditionOrDisease": [
+        "肝细胞癌"
+      ],
+      "interventions": [
+        "BAY 3547926 注射液"
+      ],
+      "recruitmentStatus": "进行中 招募中",
+      "sourceUrl": "https://www.chinadrugtrials.org.cn/clinicaltrials.searchlistdetail.dhtml"
+    },
+    {
+      "recordId": "chinadrugtrials:CTR20263430",
+      "source": {
+        "id": "chinadrugtrials",
+        "label": "ChinaDrugTrials（受控归档）",
+        "sourceRecordId": "CTR20263430"
+      },
+      "registryNumbers": [
+        {
+          "registry": "CTR",
+          "value": "CTR20263430",
+          "primary": true
+        }
+      ],
+      "provenance": {
+        "rawEvidenceRefs": [],
+        "piiLevel": "public_source_may_contain_pii",
+        "retrievedAt": "2026-10-22T13:00:27.325Z"
+      },
+      "title": "一项评估NRT6003注射液在不可手术切除的肝细胞癌患者中局部给药后药代动力学、体内分布及安全性的临床药理研究",
+      "conditionOrDisease": [
+        "肝细胞癌"
+      ],
+      "interventions": [
+        "NRT6003注射液"
+      ],
+      "recruitmentStatus": "进行中 尚未招募",
+      "sourceUrl": "https://www.chinadrugtrials.org.cn/clinicaltrials.searchlistdetail.dhtml"
+    },
+    {
+      "recordId": "chictr_online:317722",
+      "source": {
+        "id": "chictr_online",
+        "label": "ChiCTR 在线",
+        "sourceRecordId": "317722"
+      },
+      "registryNumbers": [
+        {
+          "registry": "CHICTR",
+          "value": "ChiCTR2600133818",
+          "primary": true
+        }
+      ],
+      "provenance": {
+        "rawEvidenceRefs": [],
+        "piiLevel": "public_source_may_contain_pii",
+        "retrievedAt": "2026-10-22T13:00:41.178Z"
+      },
+      "title": "伊达比星对比表柔比星经肝动脉化疗栓塞联合HAIC治疗不可手术切除肝细胞癌的临床研究",
+      "studyType": "干预性研究",
+      "sponsorOrInstitution": [
+        "福建省肿瘤医院"
+      ],
+      "dates": {
+        "registered": "2026/10/08"
+      },
+      "sourceUrl": "https://www.chictr.org.cn/showproj.html?proj=317722"
+    },
+    {
+      "recordId": "chictr_online:297293",
+      "source": {
+        "id": "chictr_online",
+        "label": "ChiCTR 在线",
+        "sourceRecordId": "297293"
+      },
+      "registryNumbers": [
+        {
+          "registry": "CHICTR",
+          "value": "ChiCTR2600133059",
+          "primary": true
+        }
+      ],
+      "provenance": {
+        "rawEvidenceRefs": [],
+        "piiLevel": "public_source_may_contain_pii",
+        "retrievedAt": "2026-10-22T13:00:41.178Z"
+      },
+      "title": "初始不可切除肝细胞癌经系统治疗后达完全缓解是否接受手术切除的生存分析：一项多中心、真实世界研究",
+      "studyType": "观察性研究",
+      "sponsorOrInstitution": [
+        "福州大学附属省立医院"
+      ],
+      "dates": {
+        "registered": "2026/09/21"
+      },
+      "sourceUrl": "https://www.chictr.org.cn/showproj.html?proj=297293"
+    },
+    {
+      "recordId": "chictr_online:262456",
+      "source": {
+        "id": "chictr_online",
+        "label": "ChiCTR 在线",
+        "sourceRecordId": "262456"
+      },
+      "registryNumbers": [
+        {
+          "registry": "CHICTR",
+          "value": "ChiCTR2600133805",
+          "primary": true
+        }
+      ],
+      "provenance": {
+        "rawEvidenceRefs": [],
+        "piiLevel": "public_source_may_contain_pii",
+        "retrievedAt": "2026-10-22T13:00:41.178Z"
+      },
+      "title": "改良iTACE联合阿替利珠单抗联合贝伐珠单抗（T＋A）治疗不可切除肝细胞癌的有效性和安全性：一项单中心、单臂、探索性的II期临床研究",
+      "studyType": "干预性研究",
+      "sponsorOrInstitution": [
+        "复旦大学附属肿瘤医院"
+      ],
+      "dates": {
+        "registered": "2026/10/08"
+      },
+      "sourceUrl": "https://www.chictr.org.cn/showproj.html?proj=262456"
+    },
+    {
+      "recordId": "chictr_online:345905",
+      "source": {
+        "id": "chictr_online",
+        "label": "ChiCTR 在线",
+        "sourceRecordId": "345905"
+      },
+      "registryNumbers": [
+        {
+          "registry": "CHICTR",
+          "value": "ChiCTR2600133713",
+          "primary": true
+        }
+      ],
+      "provenance": {
+        "rawEvidenceRefs": [],
+        "piiLevel": "public_source_may_contain_pii",
+        "retrievedAt": "2026-10-22T13:00:41.178Z"
+      },
+      "title": "放疗联合系统治疗在肝细胞癌腹腔转移中的疗效和安全性分析：一 项单臂、双向性、观察性临床研究",
+      "studyType": "观察性研究",
+      "sponsorOrInstitution": [
+        "南方医科大学南方医院"
+      ],
+      "dates": {
+        "registered": "2026/09/30"
+      },
+      "sourceUrl": "https://www.chictr.org.cn/showproj.html?proj=345905"
+    },
+    {
+      "recordId": "xyb_chinadrugtrials_archive:CTR20243699",
+      "source": {
+        "id": "xyb_chinadrugtrials_archive",
+        "label": "XYB ChinaDrugTrials 数据包（只读离线）",
+        "sourceRecordId": "CTR20243699"
+      },
+      "registryNumbers": [
+        {
+          "registry": "CTR",
+          "value": "CTR20243699",
+          "primary": true
+        },
+        {
+          "registry": "CTR",
+          "value": "CTR20232054"
+        }
+      ],
+      "provenance": {
+        "rawEvidenceRefs": [
+          {
+            "kind": "raw_html",
+            "path": "output/胰腺癌/raw/CTR20243699_detail.html",
+            "contentHash": "a434b4510aa15dbf36704f51dd70311401e3893c048c3a7e7f3649e5aaff9d41"
+          }
+        ],
+        "piiLevel": "public_source_may_contain_pii",
+        "scrapedAt": "2026-10-04T13:25:17.882568",
+        "contentHash": "a434b4510aa15dbf36704f51dd70311401e3893c048c3a7e7f3649e5aaff9d41"
+      },
+      "title": "注射用JJH201601脂质体用于治疗晚期胰腺癌、胆道癌和肝细胞癌患者的有效性和安全性的单臂、多中心、开放的Ib/IIa期临床研究",
+      "publicTitle": "注射用JJH201601脂质体Ib/IIa期临床研究",
+      "conditionOrDisease": [
+        "胰腺癌、胆道癌、肝细胞癌"
+      ],
+      "interventions": [
+        "注射用JJH201601脂质体"
+      ],
+      "studyType": "化学药物",
+      "recruitmentStatus": "进行中",
+      "sponsorOrInstitution": [
+        "1"
+      ],
+      "dates": {
+        "registered": "2024-10-08",
+        "updated": "2026-08-14T19:52:40.380459"
+      },
+      "sourceUrl": "https://www.chinadrugtrials.org.cn/clinicaltrials.searchlistdetail.dhtml"
+    },
+    {
+      "recordId": "chinadrugtrials:CTR20262632",
+      "source": {
+        "id": "chinadrugtrials",
+        "label": "ChinaDrugTrials（受控归档）",
+        "sourceRecordId": "CTR20262632"
+      },
+      "registryNumbers": [
+        {
+          "registry": "CTR",
+          "value": "CTR20262632",
+          "primary": true
+        }
+      ],
+      "provenance": {
+        "rawEvidenceRefs": [],
+        "piiLevel": "public_source_may_contain_pii",
+        "retrievedAt": "2026-10-22T13:00:27.325Z"
+      },
+      "title": "盐酸安罗替尼胶囊（12 mg）人体空腹生物等效性预试验",
+      "conditionOrDisease": [
+        "非小细胞肺癌、小细胞肺癌、软组织肉瘤、甲状腺癌（甲状腺髓样癌、分化型甲状腺癌）、子宫内膜癌、肾细胞癌、肝细胞癌"
+      ],
+      "interventions": [
+        "盐酸安罗替尼胶囊"
+      ],
+      "recruitmentStatus": "已完成",
+      "sourceUrl": "https://www.chinadrugtrials.org.cn/clinicaltrials.searchlistdetail.dhtml"
+    },
+    {
+      "recordId": "chinadrugtrials:CTR20263590",
+      "source": {
+        "id": "chinadrugtrials",
+        "label": "ChinaDrugTrials（受控归档）",
+        "sourceRecordId": "CTR20263590"
+      },
+      "registryNumbers": [
+        {
+          "registry": "CTR",
+          "value": "CTR20263590",
+          "primary": true
+        }
+      ],
+      "provenance": {
+        "rawEvidenceRefs": [],
+        "piiLevel": "public_source_may_contain_pii",
+        "retrievedAt": "2026-10-22T13:00:27.325Z"
+      },
+      "title": "盐酸安罗替尼胶囊（12 mg）人体高脂餐后生物等效性预试验",
+      "conditionOrDisease": [
+        "非小细胞肺癌、小细胞肺癌、软组织肉瘤、甲状腺癌（甲状腺髓样癌、分化型甲状腺癌）、子宫内膜癌、肾细胞癌、肝细胞癌"
+      ],
+      "interventions": [
+        "盐酸安罗替尼胶囊"
+      ],
+      "recruitmentStatus": "进行中 尚未招募",
+      "sourceUrl": "https://www.chinadrugtrials.org.cn/clinicaltrials.searchlistdetail.dhtml"
+    },
+    {
+      "recordId": "chictr_online:340383",
+      "source": {
+        "id": "chictr_online",
+        "label": "ChiCTR 在线",
+        "sourceRecordId": "340383"
+      },
+      "registryNumbers": [
+        {
+          "registry": "CHICTR",
+          "value": "ChiCTR2600133654",
+          "primary": true
+        }
+      ],
+      "provenance": {
+        "rawEvidenceRefs": [],
+        "piiLevel": "public_source_may_contain_pii",
+        "retrievedAt": "2026-10-22T13:00:41.178Z"
+      },
+      "title": "肝动脉化疗栓塞术联合抗PD-1抗体联合或不联合多纳非尼用于伴高危复发因素肝细胞癌患者术后辅助治疗的双向队列研究",
+      "studyType": "观察性研究",
+      "sponsorOrInstitution": [
+        "华中科技大学同济医学院附属同济医院"
+      ],
+      "dates": {
+        "registered": "2026/09/30"
+      },
+      "sourceUrl": "https://www.chictr.org.cn/showproj.html?proj=340383"
+    },
+    {
+      "recordId": "chictr_online:343976",
+      "source": {
+        "id": "chictr_online",
+        "label": "ChiCTR 在线",
+        "sourceRecordId": "343976"
+      },
+      "registryNumbers": [
+        {
+          "registry": "CHICTR",
+          "value": "ChiCTR2600134923",
+          "primary": true
+        }
+      ],
+      "provenance": {
+        "rawEvidenceRefs": [],
+        "piiLevel": "public_source_may_contain_pii",
+        "retrievedAt": "2026-10-22T13:00:41.178Z"
+      },
+      "title": "膈肌打水辅助微波消融治疗肝细胞癌的效果评估及与外科手术切除的疗效对比分析",
+      "studyType": "观察性研究",
+      "sponsorOrInstitution": [
+        "吉林大学第一医院"
+      ],
+      "dates": {
+        "registered": "2026/10/22"
+      },
+      "sourceUrl": "https://www.chictr.org.cn/showproj.html?proj=343976"
+    },
+    {
+      "recordId": "xyb_chinadrugtrials_archive:CTR20220934",
+      "source": {
+        "id": "xyb_chinadrugtrials_archive",
+        "label": "XYB ChinaDrugTrials 数据包（只读离线）",
+        "sourceRecordId": "CTR20220934"
+      },
+      "registryNumbers": [
+        {
+          "registry": "CTR",
+          "value": "CTR20220934",
+          "primary": true
+        },
+        {
+          "registry": "CTR",
+          "value": "CTR20220935"
+        }
+      ],
+      "provenance": {
+        "rawEvidenceRefs": [
+          {
+            "kind": "raw_html",
+            "path": "output/胰腺癌/raw/CTR20220934_detail.html",
+            "contentHash": "b1f1492c12f9bb1c0265b78643397dc577b26bea9e5246e205fd1b2134826847"
+          }
+        ],
+        "piiLevel": "public_source_may_contain_pii",
+        "scrapedAt": "2026-10-04T13:25:17.882568",
+        "contentHash": "b1f1492c12f9bb1c0265b78643397dc577b26bea9e5246e205fd1b2134826847"
+      },
+      "title": "评价AST-001治疗恶性肿瘤患者的安全性、耐受性、药代动力学、初步疗效以及疗效与AKR1C3表达相关性的临床研究",
+      "publicTitle": "评价AST-001治疗恶性肿瘤患者的安全性、耐受性、药代动力学、初步疗效以及疗效与AKR1C3表达相关性的临床研究",
+      "conditionOrDisease": [
+        "晚期恶性实体瘤，包括但不限于胰腺癌、肝细胞癌、非小细胞肺癌、乳腺癌、胃癌、食管癌、结肠癌、直肠癌、肾细胞癌、脑胶质瘤、前列腺癌"
+      ],
+      "interventions": [
+        "AST-001注射液"
+      ],
+      "studyType": "化学药物",
+      "recruitmentStatus": "进行中",
+      "sponsorOrInstitution": [
+        "1"
+      ],
+      "dates": {
+        "registered": "2022-04-22",
+        "updated": "2026-08-14T04:02:27.839491"
+      },
+      "sourceUrl": "https://www.chinadrugtrials.org.cn/clinicaltrials.searchlistdetail.dhtml"
+    },
+    {
+      "recordId": "chinadrugtrials:CTR20262431",
+      "source": {
+        "id": "chinadrugtrials",
+        "label": "ChinaDrugTrials（受控归档）",
+        "sourceRecordId": "CTR20262431"
+      },
+      "registryNumbers": [
+        {
+          "registry": "CTR",
+          "value": "CTR20262431",
+          "primary": true
+        }
+      ],
+      "provenance": {
+        "rawEvidenceRefs": [],
+        "piiLevel": "public_source_may_contain_pii",
+        "retrievedAt": "2026-10-22T13:00:27.325Z"
+      },
+      "title": "评估IMM2510联合IMM27M治疗晚期肝细胞癌患者的Ⅱ期临床研究",
+      "conditionOrDisease": [
+        "肝细胞癌"
+      ],
+      "interventions": [
+        "注射用IMM2510"
+      ],
+      "recruitmentStatus": "进行中 尚未招募",
+      "sourceUrl": "https://www.chinadrugtrials.org.cn/clinicaltrials.searchlistdetail.dhtml"
+    },
+    {
+      "recordId": "xyb_chinadrugtrials_archive:CTR20181729",
+      "source": {
+        "id": "xyb_chinadrugtrials_archive",
+        "label": "XYB ChinaDrugTrials 数据包（只读离线）",
+        "sourceRecordId": "CTR20181729"
+      },
+      "registryNumbers": [
+        {
+          "registry": "CTR",
+          "value": "CTR20181729",
+          "primary": true
+        },
+        {
+          "registry": "CTR",
+          "value": "CTR20140595"
+        },
+        {
+          "registry": "CTR",
+          "value": "CTR20180034"
+        },
+        {
+          "registry": "CTR",
+          "value": "CTR20180386"
+        },
+        {
+          "registry": "CTR",
+          "value": "CTR20180520"
+        },
+        {
+          "registry": "CTR",
+          "value": "CTR20180903"
+        },
+        {
+          "registry": "CTR",
+          "value": "CTR20181541"
+        },
+        {
+          "registry": "CTR",
+          "value": "CTR20190233"
+        }
+      ],
+      "provenance": {
+        "rawEvidenceRefs": [
+          {
+            "kind": "raw_html",
+            "path": "output/胰腺癌/raw/CTR20181729_detail.html",
+            "contentHash": "f9e5d1000c5975617fe620d3871c42729f0b51845b63370e1fd5f35c3e3c46ba"
+          }
+        ],
+        "piiLevel": "public_source_may_contain_pii",
+        "scrapedAt": "2026-10-04T13:25:17.882568",
+        "contentHash": "f9e5d1000c5975617fe620d3871c42729f0b51845b63370e1fd5f35c3e3c46ba"
+      },
+      "title": "评估SCT200在晚期实体瘤中的安全性和有效性的开放性Ib期研究",
+      "publicTitle": "评估SCT200在晚期实体瘤中的Ib期研究",
+      "conditionOrDisease": [
+        "晚期实体瘤（胃癌/胃食管交界处癌、肝细胞癌、胰腺癌、胆管/胆囊癌、 肾细胞癌、卵巢癌等）"
+      ],
+      "interventions": [
+        "重组全人源抗人表皮生长因子受体单克隆抗体注射液 曾用名:无"
+      ],
+      "studyType": "生物制品",
+      "recruitmentStatus": "主动终止",
+      "sponsorOrInstitution": [
+        "1"
+      ],
+      "dates": {
+        "registered": "2018-10-08",
+        "updated": "2026-08-14T19:55:29.373071"
+      },
+      "sourceUrl": "https://www.chinadrugtrials.org.cn/clinicaltrials.searchlistdetail.dhtml"
+    },
+    {
+      "recordId": "chictr_online:347998",
+      "source": {
+        "id": "chictr_online",
+        "label": "ChiCTR 在线",
+        "sourceRecordId": "347998"
+      },
+      "registryNumbers": [
+        {
+          "registry": "CHICTR",
+          "value": "ChiCTR2600134628",
+          "primary": true
+        }
+      ],
+      "provenance": {
+        "rawEvidenceRefs": [],
+        "piiLevel": "public_source_may_contain_pii",
+        "retrievedAt": "2026-10-22T13:00:41.178Z"
+      },
+      "title": "评估[68Ga]Ga-ELI30104注射液在原发性肝细胞癌患者中显像效果的临床研究",
+      "studyType": "干预性研究",
+      "sponsorOrInstitution": [
+        "桂林医科大学第一附属医院"
+      ],
+      "dates": {
+        "registered": "2026/10/19"
+      },
+      "sourceUrl": "https://www.chictr.org.cn/showproj.html?proj=347998"
+    },
+    {
+      "recordId": "xyb_chinadrugtrials_archive:CTR20233158",
+      "source": {
+        "id": "xyb_chinadrugtrials_archive",
+        "label": "XYB ChinaDrugTrials 数据包（只读离线）",
+        "sourceRecordId": "CTR20233158"
+      },
+      "registryNumbers": [
+        {
+          "registry": "CTR",
+          "value": "CTR20233158",
+          "primary": true
+        }
+      ],
+      "provenance": {
+        "rawEvidenceRefs": [
+          {
+            "kind": "raw_html",
+            "path": "output/胰腺癌/raw/CTR20233158_detail.html",
+            "contentHash": "9f5200f78195f0a3211e55f2898d75a936cb5759c5b6a0b3f7b76adc819203cd"
+          }
+        ],
+        "piiLevel": "public_source_may_contain_pii",
+        "scrapedAt": "2026-10-04T13:25:17.882568",
+        "contentHash": "9f5200f78195f0a3211e55f2898d75a936cb5759c5b6a0b3f7b76adc819203cd"
+      },
+      "title": "评估注射用P01在实体瘤根治术后高复发风险患者术后辅助治疗的安全性、耐受性及初步有效性的I期临床研究",
+      "publicTitle": "注射用P01的I期临床研究",
+      "conditionOrDisease": [
+        "实体瘤根治术后具高复发风险患者，主要包括I/II/III期胆管细胞癌、胰腺癌",
+        "II/III期食管癌、肝细胞癌",
+        "III期肠癌、胃癌和黑色素瘤"
+      ],
+      "interventions": [
+        "注射用P01"
+      ],
+      "studyType": "生物制品",
+      "recruitmentStatus": "进行中",
+      "sponsorOrInstitution": [
+        "1"
+      ],
+      "dates": {
+        "registered": "2023-10-10",
+        "updated": "2026-08-14T19:53:01.033933"
+      },
+      "sourceUrl": "https://www.chinadrugtrials.org.cn/clinicaltrials.searchlistdetail.dhtml"
+    }
+  ],
+  "overlaps": [
+    {
+      "registryNumber": "CTR:CTR20263232",
+      "recordIds": [
+        "chinadrugtrials:CTR20263232",
+        "xyb_chinadrugtrials_archive:CTR20263232"
+      ],
+      "mergeApplied": true
+    }
+  ],
+  "startedAt": "2026-10-22T13:00:27.006Z",
+  "elapsedMs": 14173,
+  "cancelled": false,
+  "disclaimer": "本响应仅汇总已配置来源的检索结果，不等于全网或官网全量。来源终态为 SUCCESS/NO_RESULTS 之外的渠道均未被成功查询，其缺失不得解读为“不存在相关试验”。所有结论须回溯来源原文并由人工核验，本服务不提供医疗建议。"
+}

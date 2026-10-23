@@ -1,0 +1,112 @@
+{
+  "dataset": "hcc-clinical-trials-2026",
+  "year": 2026,
+  "generatedAt": "2026-10-22T13:03:31.500Z",
+  "dataCutoff": "2026-10-22",
+  "query": {
+    "condition": "肝细胞癌",
+    "keywords": [
+      "hepatocellular carcinoma",
+      "HCC",
+      "liver cancer"
+    ],
+    "maxResults": 200
+  },
+  "mcp": {
+    "service": "unified-trial-mcp",
+    "version": "0.3.1",
+    "dir": "/Users/qinxiaoqiang/Downloads/unified_search_trials",
+    "entry": "dist/src/cli/main.js"
+  },
+  "channels": [
+    {
+      "sourceId": "chinadrugtrials",
+      "state": "SUCCESS",
+      "reasonCode": "OK",
+      "resultCount": 20,
+      "warnings": [
+        "上游共 16 页、约 308 条记录，本次只取第 1-1 页；受控来源不进行大规模抓取，如需完整数据请运行 sync_chinadrugtrials。",
+        "结果可能被截断，未覆盖来源全部命中。"
+      ]
+    },
+    {
+      "sourceId": "xyb_chinadrugtrials_archive",
+      "state": "SUCCESS",
+      "reasonCode": "OK",
+      "resultCount": 5,
+      "warnings": [
+        "已跳过 2 个不可用数据包：B7-H3_CD276_招募中（缺少 summary.json 清单，视为未完成的采集快照）；FG-M108（缺少 summary.json 清单，视为未完成的采集快照）。这些包内的记录未纳入本次检索。",
+        "本数据包数据截止 2026-09-29，记录抓取时间跨度为 2026-08-14 至 2026-09-29；该日期之后登记的试验在包内不可见，零结果不能证明不存在。数据包由小胰宝社区共同维护，可用 doctor 查看并更新。",
+        "packages_skipped:2"
+      ]
+    },
+    {
+      "sourceId": "chictr_online",
+      "state": "SUCCESS",
+      "reasonCode": "OK",
+      "resultCount": 10,
+      "warnings": []
+    },
+    {
+      "sourceId": "chictr_pancreatic_archive",
+      "state": "NEEDS_SETUP",
+      "reasonCode": "PATH_MISSING",
+      "resultCount": null,
+      "warnings": []
+    },
+    {
+      "sourceId": "ctv",
+      "state": "NO_RESULTS",
+      "reasonCode": "EMPTY_RESULT_SET",
+      "resultCount": 0,
+      "warnings": [
+        "本地索引中 0 命中：该索引只覆盖 1434 条研究（其中 1434 条有完整详情），0 命中不等于没有相关试验。关键词检索请优先用 ClinicalTrials.gov；也可按 UTN/NCT/slug 用 get_study_detail 直查，或用 import_csv_export / sync_sitemap 扩大覆盖后再检索。"
+      ]
+    },
+    {
+      "sourceId": "ictrp",
+      "state": "FAILED",
+      "reasonCode": "UPSTREAM_UNKNOWN_ERROR",
+      "resultCount": null,
+      "warnings": []
+    }
+  ],
+  "counts": {
+    "recordsReturned": 34,
+    "recordsKept": 34,
+    "recordsDroppedIrrelevant": 0,
+    "bySource": {
+      "chinadrugtrials": 20,
+      "chictr_online": 10,
+      "xyb_chinadrugtrials_archive": 4
+    },
+    "direct": 28,
+    "indicationOnly": 6
+  },
+  "files": {
+    "jsonl": {
+      "path": "trials-2026.jsonl",
+      "bytes": 25102,
+      "sha256": "805b3359cf621b67659eb0585d7a42b17e3a09d82cc064c39c93452b8c30b29c",
+      "lines": 34
+    },
+    "sqlite": {
+      "path": "hcc_trials_2026.sqlite",
+      "bytes": 53248,
+      "sha256": "2b928da6fba9ac3ed81bdaaacbac42bf6ad03d6a37af27e342418d2e2bf8ec9a",
+      "rows": 34
+    }
+  },
+  "consistency": {
+    "manifestRows": 34,
+    "jsonlLines": 34,
+    "sqliteRows": 34
+  },
+  "boundaries": [
+    "HCC 无专属离线语料：chictr_pancreatic_archive 与 xyb_chinadrugtrials_archive 均为胰腺癌语料，对 HCC 属未配置/部分覆盖",
+    "ChiCTR 在线仅取首屏结果，不等同全量",
+    "CTV 为本地索引子集（1434 条），0 命中不代表 ClinicalTrials.gov 无相关试验",
+    "ICTRP 本次上游报错，终态为 FAILED，不能写成“无结果”",
+    "登记状态未核实；登记 ≠ 有效 ≠ 安全 ≠ 可入组"
+  ]
+}

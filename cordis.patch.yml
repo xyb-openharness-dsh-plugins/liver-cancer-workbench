@@ -1,0 +1,3 @@
+- insert:
+    - id: liver-cancer-workbench-main
+      name: "@xyb-community/liver-cancer-workbench"
