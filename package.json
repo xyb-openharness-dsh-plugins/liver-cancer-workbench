@@ -31,7 +31,9 @@
     "build:demo": "node --disable-warning=ExperimentalWarning demo/build-demo-data.mjs",
     "fetch:trials": "node --disable-warning=ExperimentalWarning scripts/fetch-hcc-trials-2026.mjs",
     "test": "node --disable-warning=ExperimentalWarning --test test/*.test.mjs",
-    "check:all": "npm run check && npm run test"
+    "check:all": "npm run check && npm run test",
+    "probe:ui": "node --disable-warning=ExperimentalWarning scripts/probe-prod-ui.mjs",
+    "shot:views": "node --disable-warning=ExperimentalWarning scripts/shot-views.mjs"
   },
   "dsh": {
     "bundle": {

@@ -12,130 +12,13 @@
 //
 // 用法：node scripts/probe-prod-ui.mjs [--keep]
 // 退出码：0 全通过 / 1 有断言失败
-import { createServer } from 'node:http'
-import { readFileSync, copyFileSync, mkdirSync } from 'node:fs'
-import { mkdtemp, copyFile } from 'node:fs/promises'
-import { join, dirname, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
-import { homedir } from 'node:os'
+import { join } from 'node:path'
+import { startHarness, launchBrowser, ensureShotDir } from './harness.mjs'
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-const NM = '/Users/qinxiaoqiang/.workbuddy/binaries/node/workspace/node_modules'
-
-const { openDatabase } = await import(join(ROOT, 'dsh/db.js'))
-const { createHandlers } = await import(join(ROOT, 'dsh/api.js'))
-
-// 演示库只读用，写操作在临时副本上做——探针不能污染 repository 里的 demo 库
-const tmp = await mkdtemp(join(homedir(), '.xyb-probe-'))
-const dbPath = join(tmp, 'probe.sqlite')
-await copyFile(join(ROOT, 'demo/demo-data.sqlite'), dbPath)
-const db = openDatabase(dbPath)
-const handlers = createHandlers({ getDb: () => db, version: 'probe' })
-
-const PAGE = `<!doctype html><meta charset="utf-8">
-<title>probe</title>
-<style>html,body{margin:0;height:100%}#root{height:100%;display:flex}</style>
-<div id="root"></div>
-<script src="/vendor/react.js"></script>
-<script src="/vendor/react-dom.js"></script>
-<script>
-  window.__probeErrors__ = [];
-  window.addEventListener('error', (e) => window.__probeErrors__.push(String(e.message)));
-  const require = (name) => {
-    if (name === 'react') return window.React;
-    throw new Error('unexpected require: ' + name);
-  };
-  let mounted = null;
-  // 假宿主：会话归属、订阅、调起会话都按官方合同的最小面实现，
-  // 这样顶栏「AI 对话」按钮走的是真分支，而不是永远 disabled。
-  const listeners = new Set();
-  let currentId = null;
-  const conversationNode = document.createElement('div');
-  conversationNode.id = 'fake-conversation';
-  conversationNode.textContent = '原生会话占位（假宿主）';
-  conversationNode.style.padding = '16px';
-  conversationNode.style.fontSize = '13px';
-  window.__ModuleLoader__ = {
-    load({ id, factory }) {
-      const mod = factory(require);
-      const ctx = {
-        effect(fn) { fn(); return () => {}; },
-        sessions: { scope() { return null; } },
-        desktopWorkbenches: {
-          register(meta, Component) { mounted = { meta, Component }; },
-          currentSession() { return currentId; },
-          ownsSession(id) { return id === currentId; },
-          subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); },
-          async ensureSession() {
-            currentId = 'probe-session-1';
-            listeners.forEach((fn) => fn());
-            return currentId;
-          },
-        },
-      };
-      window.__probeService__ = ctx.desktopWorkbenches;
-      mod.apply(ctx);
-      if (!mounted) throw new Error('workbench 没有注册');
-      window.__probeMeta__ = mounted.meta;
-      document.title = mounted.meta.title;
-      ReactDOM.createRoot(document.getElementById('root'))
-        .render(React.createElement(mounted.Component, { conversation: conversationNode }));
-    },
-  };
-</script>
-<script src="/client.js"></script>`
-
-const server = createServer((req, res) => {
-  const url = new URL(req.url, 'http://127.0.0.1')
-  if (url.pathname === '/favicon.ico') { res.writeHead(204).end(); return }
-  if (url.pathname === '/') {
-    res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }).end(PAGE)
-    return
-  }
-  if (url.pathname === '/client.js') {
-    res.writeHead(200, { 'content-type': 'text/javascript; charset=utf-8' }).end(readFileSync(join(ROOT, 'lib/client.js')))
-    return
-  }
-  if (url.pathname.startsWith('/vendor/')) {
-    const name = url.pathname.slice('/vendor/'.length)
-    const file = name === 'react.js' ? join(NM, 'react/umd/react.development.js') : join(NM, 'react-dom/umd/react-dom.development.js')
-    res.writeHead(200, { 'content-type': 'text/javascript; charset=utf-8' }).end(readFileSync(file))
-    return
-  }
-  const route = handlers.find((r) => r.path === url.pathname)
-  if (!route) { res.writeHead(404).end('{}'); return }
-  // 方法白名单照 dsh/guard.js 的做法拦一道：读路由只认 GET，写路由只认 POST
-  const allow = route.methods || ['GET']
-  if (!allow.includes(req.method)) {
-    res.writeHead(405, { 'content-type': 'application/json', allow: allow.join(', ') }).end(JSON.stringify({ error: 'method_not_allowed' }))
-    return
-  }
-  const chunks = []
-  req.on('data', (c) => chunks.push(c))
-  req.on('end', () => {
-    let body = {}
-    if (chunks.length) {
-      try { body = JSON.parse(Buffer.concat(chunks).toString('utf8')) } catch {
-        res.writeHead(400, { 'content-type': 'application/json' }).end(JSON.stringify({ error: '请求体不是合法 JSON' }))
-        return
-      }
-    }
-    Promise.resolve(route.run(url, body))
-      .then((out) => res.writeHead(out.status, { 'content-type': 'application/json; charset=utf-8' }).end(JSON.stringify(out.body)))
-      .catch((e) => res.writeHead(500).end(JSON.stringify({ error: e.message })))
-  })
-})
-
-await new Promise((r) => server.listen(0, '127.0.0.1', r))
-const port = server.address().port
-const base = `http://127.0.0.1:${port}`
-
-const puppeteer = (await import(join(NM, 'puppeteer-core/lib/puppeteer/puppeteer-core.js'))).default
-const chrome = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
-const browser = await puppeteer.launch({
-  executablePath: chrome, headless: 'new',
-  args: ['--no-sandbox', `--proxy-server=${process.env.http_proxy || ''}`, '--proxy-bypass-list=127.0.0.1'],
-})
+const SHOT = ensureShotDir()
+const harness = await startHarness()
+const base = harness.base
+const browser = await launchBrowser()
 
 const fails = []
 const check = (ok, msg) => { if (!ok) fails.push(msg); return ok }
@@ -187,8 +70,7 @@ try {
   check(opened.pane !== 'none', '调起会话后会话区仍是隐藏的')
   check(opened.conv, '原生会话节点没被渲染进会话区')
   check(opened.splitter, '宽屏下没有 splitter，调不了宽度')
-  mkdirSync(join(ROOT, 'prototypes/v0.1'), { recursive: true })
-  await page.screenshot({ path: join(ROOT, 'prototypes/v0.1/prod-view-agent.png') })
+  await page.screenshot({ path: join(SHOT, 'prod-view-agent.png') })
 
   // 0c) 键盘调宽：← 应为 +2%，且写进 localStorage
   const w0 = await page.evaluate(() => Number(document.querySelector('.wb-splitter').getAttribute('aria-valuenow')))
@@ -239,7 +121,7 @@ try {
   check(narrowState.navDir === 'row', `窄屏一级导航应横排，实际 ${narrowState.navDir}`)
   check(narrowState.sideCols === 1, `窄屏业务区应为单列，实际 ${narrowState.sideCols} 列`)
   check(narrowState.drawer === 'absolute', '窄屏会话应为覆盖式抽屉')
-  await page.screenshot({ path: join(ROOT, 'prototypes/v0.1/prod-view-narrow.png') })
+  await page.screenshot({ path: join(SHOT, 'prod-view-narrow.png') })
 
   // 0g) 抽屉要能点遮罩关掉：不点遮罩的话手机上一个浮层盖住半个屏幕就没出口
   await page.evaluate(() => document.querySelector('.wb-scrim').click())
@@ -310,17 +192,12 @@ try {
   })
   check(rejected.includes('已退回'), '退回没有生效')
 
-  await page.screenshot({ path: join(ROOT, 'prototypes/v0.1/prod-view-import.png'), fullPage: true })
+  await page.screenshot({ path: join(SHOT, 'prod-view-import.png'), fullPage: true })
 
   check(errors.length === 0, `控制台报错：${errors.slice(0, 3).join(' | ')}`)
 } finally {
   await browser.close()
-  server.close()
-  db.close()
-  if (!process.argv.includes('--keep')) {
-    const { rm } = await import('node:fs/promises')
-    await rm(tmp, { recursive: true, force: true })
-  }
+  await harness.close({ keep: process.argv.includes('--keep') })
 }
 
 if (fails.length) {

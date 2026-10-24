@@ -42,6 +42,12 @@
   与 `sessions.scope()`，新增 9 组断言：语义 header 首位、侧栏 10 项、`customFrame === true`、
   无会话时会话区隐藏、点按钮后文案翻转 + 会话区出现 + splitter 出现、键盘 ← 精确 +2% 且落 localStorage、
   鼠标拖动变宽、`×` 收起后会话节点仍挂载、窄屏三项（导航横排 / 业务区单列 / 抽屉 absolute）+ 遮罩可关。
+- 新增 `scripts/harness.mjs`：假宿主（React UMD + `__ModuleLoader__` + 会话最小面 + 真实 `dsh/api.js` 路由）
+  从探针里抽出来，探针与截图脚本共用一份，避免两份外壳各自漂移。
+- 新增 `scripts/shot-views.mjs`（`npm run shot:views`）：重出 10 张视图截图 + 2 张翻面卡，
+  文档里的 `prod-view-*.png` 全部换成左侧栏版式。
+- 主区自身也是容器（`container-type:inline-size`）：会话区展开后主区变窄，卡片与两栏按主区宽度折叠，
+  不会把导入队列压到 190px。
 - `npm run check` 四段全过，`npm test` 83/83。
 
 ## v0.3.3 · 2026-10-24（导入在界面里闭环：队列 → 候选 → 确认写库）
