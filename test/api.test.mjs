@@ -1,5 +1,5 @@
 // 路由与鉴权单测：不起 Desktop，直接拿 handler 调。
-// 钉住四件事：鉴权先于读取、方法不对 405、缺参数 400、私密默认不出。
+// 钉住五件事：鉴权先于读取、方法不匹配 405、缺参数 400、私密默认不出、写路由只认 POST。
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { join, dirname } from 'node:path'
@@ -12,32 +12,75 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const DEMO = join(ROOT, 'demo', 'demo-data.sqlite')
 const VERSION = '0.3.0-test'
 
-function harness({ reject } = {}) {
-  const db = openDatabase(DEMO)
-  const handlers = createHandlers({ getDb: () => db, version: VERSION })
-  const guard = makeGuard({ connection: { requestRejection: () => reject }, logger: { warn() {} } })
-  const call = (path, { url, method = 'GET' } = {}) => new Promise((resolve) => {
-    const entry = handlers.find((x) => x.path === path)
-    if (!entry) throw new Error(`no route ${path}`)
-    const res = {
-      status: 0, body: '',
-      writeHead(status) { this.status = status; return this },
-      end(chunk) { this.body = chunk || ''; resolve({ status: this.status, json: this.body ? JSON.parse(this.body) : null }) },
+/** 假 req：支持 asyncIterator，body 走 JSON 序列化，与真实 readJsonBody 同一条路径。 */
+function fakeReq(method, url, body) {
+  const req = { method, url }
+  if (body !== undefined) {
+    req[Symbol.asyncIterator] = async function* iterate() {
+      yield Buffer.from(typeof body === 'string' ? body : JSON.stringify(body), 'utf8')
     }
-    guard(entry.run)({ method, url: url || path }, res)
-  })
-  return { db, handlers, call }
+  }
+  return req
+}
+
+function makeRes() {
+  return {
+    status: 0, body: '', headers: {},
+    setHeader(k, v) { this.headers[k] = v },
+    writeHead(status) { this.status = status; return this },
+    end(chunk) { this.body = chunk || '' },
+  }
+}
+
+function harness({ reject, db, getDb } = {}) {
+  const database = db || openDatabase(DEMO)
+  const handlers = createHandlers({ getDb: getDb || (() => database), version: VERSION })
+  const guard = makeGuard({ connection: { requestRejection: () => reject }, logger: { warn() {} } })
+  const call = async (path, { url, method = 'GET', body } = {}) => {
+    const route = handlers.find((x) => x.path === path)
+    if (!route) throw new Error(`no route ${path}`)
+    const res = makeRes()
+    await guard(route)(fakeReq(method, url || path, body), res)
+    let json = null
+    try { json = res.body ? JSON.parse(res.body) : null } catch { json = { raw: res.body } }
+    return { status: res.status, json, headers: res.headers }
+  }
+  return { db: database, handlers, call }
+}
+
+/** 独立内存库 + 两条待确认候选，供写路由用（不动演示库） */
+function seededDb() {
+  const db = openDatabase(':memory:')
+  db.prepare('INSERT INTO profile (id, name, initial, created_at) VALUES (?, ?, ?, ?)')
+    .run('p1', '测试档案', '测', '2026-10-24T00:00:00Z')
+  db.prepare(`INSERT INTO document (profile_id, title, kind, doc_date, file_sha256, status, uploaded_at)
+              VALUES ('p1','外院化验','lab','2026-10-20','abc123','pending_review','2026-10-24T00:00:00Z')`).run()
+  db.prepare(`INSERT INTO candidate (document_id, field, value_text, value_num, unit, confidence, source_line, status, created_at)
+              VALUES (1,'albumin','38',38,'g/L',0.95,'白蛋白 38 g/L','pending','2026-10-24T00:00:00Z')`).run()
+  db.prepare(`INSERT INTO candidate (document_id, field, value_text, value_num, unit, confidence, source_line, status, created_at)
+              VALUES (1,'site','肝右叶',NULL,'',0.95,'病变部位：肝右叶','pending','2026-10-24T00:00:00Z')`).run()
+  return db
 }
 
 test('路由都在统一前缀下，且能力清单与实现一致', () => {
   const { handlers } = harness()
-  assert.equal(handlers.length, 8)
+  assert.equal(handlers.length, 10)
   for (const r of handlers) assert.ok(r.path.startsWith(API_PREFIX + '/'))
   const health = handlers.find((r) => r.path.endsWith('/health')).run(new URL('http://x/health'))
   assert.deepEqual(
     health.body.capabilities.sort(),
-    ['candidates', 'dashboard', 'documents', 'health', 'metrics', 'profiles', 'sections', 'viewpoints'],
+    ['accept', 'candidates', 'dashboard', 'documents', 'health', 'metrics', 'profiles', 'reject', 'sections', 'viewpoints'],
   )
+})
+
+test('只有两条路由声明了 POST，其余必须是 GET', () => {
+  const { handlers } = harness()
+  const post = handlers.filter((r) => (r.methods || ['GET']).includes('POST')).map((r) => r.path)
+  assert.deepEqual(post.sort(), [`${API_PREFIX}/candidates/accept`, `${API_PREFIX}/candidates/reject`].sort())
+  for (const r of handlers) {
+    if (post.includes(r.path)) continue
+    assert.deepEqual(r.methods || ['GET'], ['GET'], `${r.path} 不该接受写方法`)
+  }
 })
 
 test('health 报版本与库统计，但不暴露数据内容', () => {
@@ -55,10 +98,23 @@ test('未通过鉴权时先被拦下，不进入读取', async () => {
   assert.equal(status, 401)
 })
 
-test('非 GET 返回 405', async () => {
+test('读路由收到 POST 返回 405，并声明允许的方法', async () => {
   const { call } = harness()
-  const { status } = await call(`${API_PREFIX}/profiles`, { method: 'POST' })
+  const { status, headers } = await call(`${API_PREFIX}/profiles`, { method: 'POST' })
   assert.equal(status, 405)
+  assert.equal(headers.allow, 'GET')
+})
+
+test('写路由收到 GET 也返回 405（不能靠 GET 触发写）', async () => {
+  const db = seededDb()
+  const { call } = harness({ db })
+  // 注意：path 走精确匹配（真实注册里 query 不参与匹配），带参请放 url
+  const { status, headers } = await call(`${API_PREFIX}/candidates/accept`, {
+    url: `${API_PREFIX}/candidates/accept?id=1`,
+  })
+  assert.equal(status, 405)
+  assert.equal(headers.allow, 'POST')
+  assert.equal(db.prepare('SELECT status FROM candidate WHERE id = 1').get().status, 'pending')
 })
 
 test('dashboard 缺 profile 返回 400，不顺手返回第一个档案', async () => {
@@ -119,12 +175,6 @@ test('sections 路由：缺 profile 400，有 profile 返回七块', async () =>
   assert.equal(JSON.stringify(ok.json).includes('visibility'), false, 'sections 里不该带看法')
 })
 
-test('health 能力清单包含 sections', async () => {
-  const { call } = harness()
-  const r = await call(`${API_PREFIX}/health`)
-  assert.ok(r.json.capabilities.includes('sections'))
-})
-
 test('documents 只读队列：缺 profile 400，有 profile 返回数组', async () => {
   const { call } = harness()
   assert.equal((await call(`${API_PREFIX}/documents`)).status, 400)
@@ -133,11 +183,73 @@ test('documents 只读队列：缺 profile 400，有 profile 返回数组', asyn
   assert.ok(Array.isArray(ok.json.documents))
 })
 
-test('candidates 缺 doc 参数 400，给 doc 返回数组', async () => {
-  const { call } = harness()
+test('candidates 缺 doc 参数 400，给 doc 返回数组且带原文行', async () => {
+  const db = seededDb()
+  const { call } = harness({ db })
   assert.equal((await call(`${API_PREFIX}/candidates`)).status, 400)
   assert.equal((await call(`${API_PREFIX}/candidates`, { url: `${API_PREFIX}/candidates?doc=abc` })).status, 400)
   const ok = await call(`${API_PREFIX}/candidates`, { url: `${API_PREFIX}/candidates?doc=1` })
   assert.equal(ok.status, 200)
-  assert.ok(Array.isArray(ok.json.candidates))
+  assert.equal(ok.json.candidates.length, 2)
+  assert.equal(ok.json.candidates[0].sourceLine, '白蛋白 38 g/L', '确认界面必须有原文可核对')
+})
+
+test('accept：POST 一条数值候选 -> 写趋势点，候选转 accepted', async () => {
+  const db = seededDb()
+  const { call } = harness({ db })
+  const r = await call(`${API_PREFIX}/candidates/accept`, { method: 'POST', body: { id: 1 } })
+  assert.equal(r.status, 200)
+  assert.equal(r.json.metricId, 'albumin')
+  assert.equal(r.json.measuredOn, '2026-10-20', '没有显式日期时用报告日期')
+  assert.equal(db.prepare('SELECT status FROM candidate WHERE id = 1').get().status, 'accepted')
+  const reading = db.prepare('SELECT * FROM metric_reading WHERE metric_id = ?').get('albumin')
+  assert.equal(Number(reading.value_num), 38)
+  assert.equal(Number(reading.source_doc_id), 1, '趋势点必须能回溯原件')
+})
+
+test('accept：文本字段返回 400，不写任何趋势点', async () => {
+  const db = seededDb()
+  const { call } = harness({ db })
+  const r = await call(`${API_PREFIX}/candidates/accept`, { method: 'POST', body: { id: 2 } })
+  assert.equal(r.status, 400)
+  assert.match(r.json.error, /不是指标字段/)
+  assert.equal(db.prepare('SELECT count(*) AS n FROM metric_reading').get().n, 0)
+})
+
+test('accept：缺 id 返回 400；不存在的 id 返回 404', async () => {
+  const { call } = harness({ db: seededDb() })
+  assert.equal((await call(`${API_PREFIX}/candidates/accept`, { method: 'POST', body: {} })).status, 400)
+  const nf = await call(`${API_PREFIX}/candidates/accept`, { method: 'POST', body: { id: 999 } })
+  assert.equal(nf.status, 404)
+})
+
+test('accept：重复确认返回 409，不是静默成功', async () => {
+  const db = seededDb()
+  const { call } = harness({ db })
+  assert.equal((await call(`${API_PREFIX}/candidates/accept`, { method: 'POST', body: { id: 1 } })).status, 200)
+  assert.equal((await call(`${API_PREFIX}/candidates/accept`, { method: 'POST', body: { id: 1 } })).status, 409)
+})
+
+test('reject：POST 退回候选，不写趋势点', async () => {
+  const db = seededDb()
+  const { call } = harness({ db })
+  const r = await call(`${API_PREFIX}/candidates/reject`, { method: 'POST', body: { id: 2 } })
+  assert.equal(r.status, 200)
+  assert.equal(db.prepare('SELECT status FROM candidate WHERE id = 2').get().status, 'rejected')
+  assert.equal(db.prepare('SELECT count(*) AS n FROM metric_reading').get().n, 0)
+})
+
+test('请求体不是合法 JSON 返回 400，不抛 500', async () => {
+  const { call } = harness({ db: seededDb() })
+  const r = await call(`${API_PREFIX}/candidates/accept`, { method: 'POST', body: '{oops' })
+  assert.equal(r.status, 400)
+  assert.match(r.json.error, /JSON/)
+})
+
+test('health 能力清单包含 sections / documents / accept', async () => {
+  const { call } = harness()
+  const r = await call(`${API_PREFIX}/health`)
+  for (const cap of ['sections', 'documents', 'accept', 'reject']) {
+    assert.ok(r.json.capabilities.includes(cap), cap)
+  }
 })

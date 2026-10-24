@@ -36,8 +36,10 @@ export function apply(ctx, config) {
 
   const guard = makeGuard({ connection: ctx.connection, logger: ctx.logger })
 
-  for (const { path, run } of createHandlers({ getDb, version: manifest.version })) {
-    ctx.effect(() => ctx.webServer.register({ kind: 'exact', path, handler: guard(run) }),
-      `liver-cancer-workbench ${path}`)
+  // 传整个 route（含 methods），不能只传 run：写路由要靠 methods 判 405，
+  // 丢了它就等于把 POST /candidates/accept 变成"任何方法都放行"。
+  for (const route of createHandlers({ getDb, version: manifest.version })) {
+    ctx.effect(() => ctx.webServer.register({ kind: 'exact', path: route.path, handler: guard(route) }),
+      `liver-cancer-workbench ${route.path}`)
   }
 }

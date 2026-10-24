@@ -1,5 +1,55 @@
 # CHANGELOG
 
+## v0.3.3 · 2026-10-24（导入在界面里闭环：队列 → 候选 → 确认写库）
+
+用户指令：「继续M5，到M7，中间自己决策推进。」本轮把导入链路从"命令行能跑"推到"界面上能用"，
+并把 M6 的自测欠账一次补齐。
+
+### 界面：第 10 个视图「导入与候选」
+
+| 区域 | 行为 | 约束 |
+| --- | --- | --- |
+| 导入队列 | 文件 + 日期 + 候选计数 + 状态徽标（待确认 / 线索不足 / 未接收 / 已处理完） | 状态与理由都来自库，不前端推算；`parse_note` 原文贴着显示，`[gate]` / `[guard]` 开头能看出是哪一步拦下的 |
+| 候选列表 | 字段中文名 + 数值 + 单位 + 原文行 + 抽取置信 + 状态 | 原文行必显（`source_line`）；置信只写"匹配的把握"，不写成"数值对不对" |
+| 确认 | `POST /candidates/accept` → 写 `metric_reading` 并重取指标 | 文本字段按钮禁用（不进趋势）；无报告日期时后端 400，不拿上传日期顶 |
+| 退回 | `POST /candidates/reject` → 只改状态 | 退回不删候选，留痕 |
+
+### 数据层
+
+- `schema/0004_candidate_source.sql`：`candidate.source_line` + `candidate.note`，只增不改，sha256 `d6752af2…`。
+  `freeze-contract.md` 已登记，列数 255 → 257。
+- `demo/build-demo-data.mjs` 播种 3 份导入材料（待确认 5 候选 / 胰腺 CT 未接收 / 扫描件线索不足），
+  演示库打开就能看到闸门的三种结局，不用先跑命令行。
+
+### 路由
+
+- `dsh/guard.js` 签名从 `(run)` 改为 `(route)`：少了 `methods` 白名单，POST 会变成"任何方法都放行"。
+- 新增两条写路由，10 条路由里只有它们声明 `methods: ['POST']`；读路由收到 POST 返回 405 + `allow` 头。
+- `readJsonBody` 限 64KB，坏 JSON 回 400 不抛 500。
+
+### 新增检查
+
+| 脚本 | 查什么 | 为什么必须有 |
+| --- | --- | --- |
+| `scripts/check-schema.mjs` | 迁移 sha256 与冻结合同逐条比对，并核对演示库 `_migration` | "只增不改"靠自觉守不住；顺带发现 0004 未登记 |
+| `scripts/check-wording.mjs` | 界面与 README 的红线词（建议治疗 / 可能复发 / 可以停药 / 治愈率…） | 一句"建议治疗"就把记录工具变成医嘱 |
+| `scripts/check-version.mjs` | package.json / CHANGELOG 顶部 / README 状态行三方一致 | 已经漂移过两次 |
+| `scripts/probe-prod-ui.mjs` | 真 Chrome 跑 `lib/client.js`：10 个 tab、队列三态、候选带原文、确认写库、退回不写库、无控制台报错 | 模板字符串的界面只有真 DOM 才能验；本轮它抓出一个真 bug（见下） |
+
+三个 check 已接进 `npm run check`；`probe-prod-ui` 因依赖本机 Chrome，单列不阻塞 CI。
+
+### 修掉的问题
+
+- **`other` 被提前求值**：改成三元链后，`[state.view]()` 在 dash / metrics 两个视图上立即执行并抛
+  `is not a function`，整页白屏。`probe-prod-ui` 第一次跑就撞上了；改成惰性函数。
+- `test/api.test.mjs` 把 query 写进 path 参与精确匹配 → 改为 path 与 url 分开，注释写明真实注册里 query 不参与匹配。
+- 演示库构建曾硬编码"只跑 0001+0002"，加 0003 后 `openDatabase()` 会把 0003 登记成已应用却不执行 → 改按目录顺序遍历。
+
+### 自测
+
+`npm run check` 四段全过（staticPass / 版本 / 冻结合同 4 条 / 文案红线 0 命中）；`npm test` **83/83**；
+`probe-prod-ui` 全通过并留下 `prototypes/v0.1/prod-view-import.png`。
+
 ## v0.3.2 · 2026-10-24（导入链路落地：嗅探 → 闸门 → 抽候选 → 落库）
 
 用户指令：「测试通过。继续后续开发，现在开发状态序列图标记看一下。」（状态图已交付，本轮做导入链路）

@@ -57,8 +57,8 @@ export function ingest(db, meta, decision) {
 
     const insert = db.prepare(
       `INSERT INTO candidate
-         (document_id, field, value_text, value_num, unit, page_no, confidence, status, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?)`,
+         (document_id, field, value_text, value_num, unit, page_no, confidence, source_line, note, status, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)`,
     )
     let candidateCount = 0
     if (decision.documentStatus === 'pending_review') {
@@ -66,7 +66,9 @@ export function ingest(db, meta, decision) {
         insert.run(
           documentId, c.field, c.valueText ?? null,
           c.valueNum === null || c.valueNum === undefined ? null : c.valueNum,
-          c.unit || null, null, c.confidence ?? null, stamp,
+          c.unit || null, null, c.confidence ?? null,
+          // 原文行必须落库：确认界面上没有原文，用户就只能对一个孤零零的数字点"确认"
+          c.sourceLine ?? null, c.note ?? null, stamp,
         )
         candidateCount += 1
       }
@@ -101,10 +103,10 @@ export function listDocuments(db, profileId) {
   }))
 }
 
-/** 某文件的候选清单（逐条确认用）。 */
+/** 某文件的候选清单（逐条确认用）。带原文行与提示，确认界面才有的看。 */
 export function listCandidates(db, documentId) {
   return db.prepare(
-    `SELECT id, field, value_text, value_num, unit, confidence, status
+    `SELECT id, field, value_text, value_num, unit, confidence, source_line, note, status
        FROM candidate WHERE document_id = ? ORDER BY id`,
   ).all(documentId).map((r) => ({
     id: Number(r.id),
@@ -113,6 +115,8 @@ export function listCandidates(db, documentId) {
     valueNum: r.value_num === null ? null : Number(r.value_num),
     unit: r.unit,
     confidence: r.confidence === null ? null : Number(r.confidence),
+    sourceLine: r.source_line,
+    note: r.note,
     status: r.status,
     importable: NUMERIC_FIELDS.has(r.field) && r.value_num !== null,
   }))

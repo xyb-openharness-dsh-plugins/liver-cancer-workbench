@@ -1,6 +1,6 @@
 {
   "name": "@xyb-community/liver-cancer-workbench",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "面向肝细胞癌（HCC）患者与照护者的本机优先工作台：肝功能储备与肿瘤负荷双轨记录、转化治疗评估、门脉高压与肝相关安全性、HBV 家庭防护",
   "private": true,
   "type": "module",
@@ -23,7 +23,10 @@
     "NOTICE.md"
   ],
   "scripts": {
-    "check": "node --check dsh/index.js && node --check lib/client.js && node scripts/check-workbench-package.mjs .",
+    "check": "node --check dsh/index.js && node --check lib/client.js && node scripts/check-workbench-package.mjs . && npm run check:version && npm run check:schema && npm run check:wording",
+    "check:version": "node scripts/check-version.mjs .",
+    "check:schema": "node --disable-warning=ExperimentalWarning scripts/check-schema.mjs .",
+    "check:wording": "node scripts/check-wording.mjs .",
     "pack:check": "npm pack --dry-run",
     "build:demo": "node --disable-warning=ExperimentalWarning demo/build-demo-data.mjs",
     "fetch:trials": "node --disable-warning=ExperimentalWarning scripts/fetch-hcc-trials-2026.mjs",

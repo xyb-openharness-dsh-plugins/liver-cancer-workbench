@@ -1,9 +1,9 @@
 # DEV-PLAN · 里程碑（唯一权威）
 
-- 首次：2026-10-22 ｜ **本次更新：2026-10-24（v0.3.2 后重算）**
+- 首次：2026-10-22 ｜ **本次更新：2026-10-24（v0.3.3 后重算）**
 - 闸口顺序不可跳：**G1 业务流程 → G2 HTML 交互 demo → G3 数据模型**。通过必须留痕（确认人 / 原话要点 / 日期 / 产物版本），截图与脚本检查不算签认。
 
-> 一句话：**M1–M4 全部完成且三闸口已签认，整体 81%；卡在 M5 的两个尾巴（前端路径偏差、scripts 缺三项检查）和 M6 的 UI parity，M7 未开始。**
+> 一句话：**M1–M4 全部完成且三闸口已签认，整体 90%；M5/M6 的欠账已清零（导入在界面闭环、三项 check、12 行真实 parity），剩下的都在 M5 的 MinerU/设置页 与 M7 的投稿/落地页。**
 
 ## 进度总表
 
@@ -14,11 +14,11 @@
 | M2 原型（demo） | 原型四件套 + 演示数据 + 3D 卡片 + 自适应 + 无头实测 | 100% | 6/6 | ✅ 完成 | **G2 已签认**（v0.2.1） |
 | M3 数据模型 | `0001/0002/0003` + freeze-contract + SCHEMA-SPEC + 四项复核 | 100% | 5/5 | ✅ 完成 | **G3 已签认**（2026-10-24） |
 | M4 临床库 | `research/hcc-cancer/` 34 条 2026 试验，逐来源终态 | 100% | 3/3 | ✅ 完成 | 与 G2 交叉验证 |
-| M5 开发版 | 六步移植 + 导入链路 + MinerU + 设置 | **70%** | 5.5/8 | 🟡 进行中 | 已解锁（G2+G3 均过） |
-| M6 自测 | check / 单测 / 生产版实跑 / UI parity / 三项脚本 | **70%** | 5/7 | 🟡 进行中 | — |
-| M7 装机与市场 | tgz、Desktop 实测、市场投稿、落地页 | **25%** | 1/4 | ⬜ 未开始 | 装机只认目标 Desktop 实测 |
+| M5 开发版 | 六步移植 + 导入链路 + MinerU + 设置 | **81%** | 6.5/8 | 🟡 进行中 | 已解锁（G2+G3 均过） |
+| M6 自测 | check / 单测 / 生产版实跑 / UI parity / 三项脚本 | **93%** | 6.5/7 | 🟡 进行中 | — |
+| M7 装机与市场 | tgz、Desktop 实测、市场投稿、落地页 | **50%** | 2/4 | 🟡 进行中 | 装机只认目标 Desktop 实测 |
 
-**整体：31.5 / 39 项 = 81%**
+**整体：38 / 42 项 = 90%**
 
 ### 计分口径（避免进度条变成形容词）
 
@@ -42,10 +42,10 @@
 | 1 | 库与服务入口 | ✅ | `dsh/db.js`（迁移只增不改 + 冻结合同）、`dsh/index.js`、`dsh/guard.js` |
 | 2 | 演示播种 | ✅ | `demo/build-demo-data.mjs`（唯一来源，按目录遍历迁移） |
 | 3 | 读模型 | ✅ | `dsh/read-model.js` 321 行，7 块 section + 5 个指标函数；ALBI 派生不落库 |
-| 4 | 前端 | 🟡 半分 | `lib/client.js` 718 行，九视图 + 18 张 3D 卡全通；**偏差**：走 React 组件而非六步要求的 `public/app.js` |
+| 4 | 前端 | 🟡 半分 | `lib/client.js` 约 860 行，十视图 + 18 张 3D 卡全通（含第 10 视图「导入与候选」：队列三态 / 候选带原文 / 确认 / 退回）；**偏差仍在**：走 React 组件而非六步要求的 `public/app.js` |
 | 5 | 导入链路 | ✅ | `import/` 五模块 + `scripts/import-doc.mjs` + 2 条只读路由（计划外新增） |
-| 6 | `scripts/check-*` | 🟡 半分 | 仅 `check-workbench-package` / `check-install`；**缺** `check-schema` / `check-wording` / `check-version` |
-| 7 | 单测 | 🟡 半分 | 75 条全绿（basic / api / read-model / import / store）；**缺** ui-parity |
+| 6 | `scripts/check-*` | ✅ | 补齐 `check-schema`（冻结合同 sha256 + 演示库 `_migration`）/ `check-wording`（7 条红线，带反向用例）/ `check-version`（三方一致），已接进 `npm run check` |
+| 7 | 单测 | ✅ | **83 条全绿**（basic / api / read-model / import / store）+ `scripts/probe-prod-ui.mjs` 真 Chrome 冒烟（10 tab / 队列三态 / 确认写库 / 退回不写库） |
 | 8 | MinerU 解析 + 设置页 | ⬜ | 按 starter `docs/18-MINERU-PARSING.md` v2；`docs/SETTINGS-DESIGN.md` 只有设计 |
 
 ## M6 自测
@@ -53,19 +53,19 @@
 | # | 项 | 状态 | 证据 |
 | --- | --- | --- | --- |
 | 1 | `npm run check` | ✅ | `staticPass: true`、`errors: []` |
-| 2 | `npm test` | ✅ | 75/75，含域外拒收、近似词不误匹配、同日同指标拒绝重复 |
-| 3 | 生产版无头实跑 | ✅ | 看板 6 卡 / 指标分析 18 卡 / 640px 退一列 / 翻面 `matrix3d` / 私密 5→8 / `errs: []` |
-| 4 | 三档字号与溢出断言 | ✅ | `--tz` 三档 + `body.scrollWidth` 判溢出 |
+| 2 | `npm test` | ✅ | 83/83，含域外拒收、近似词不误匹配、同日同指标拒绝重复、写路由方法闸 |
+| 3 | 生产版无头实跑 | ✅ | `probe-prod-ui.mjs`：10 tab / 看板 6 卡 / 队列三态 / 候选 5 条带原文 / 确认后 albumin 记录数 +1 / 退回变「已退回」/ `errs: []` |
+| 4 | 三档字号与溢出断言 | 🟡 半分 | 只有 standard / large 二档；家族约定的 `--tz` 三档未接（见 `PARITY-05`） |
 | 5 | IM01–IM14 导入验收 | ✅ | 已全部写成 `test/import.test.mjs` + `test/store.test.mjs` |
-| 6 | UI parity 对照 | ⬜ | `docs/PARITY.csv` **仍是模板示例行**，一条真实对照都没填 |
-| 7 | 三项脚本（schema / wording / version） | ⬜ | 与 M5 第 6 项同一欠账 |
+| 6 | UI parity 对照 | ✅ | `docs/PARITY.csv` 12 行真实对照：7 行一致/增强、3 行接受偏离、3 行实现缺口（字号三档 / 档案切换 / 报告导出） |
+| 7 | 三项脚本（schema / wording / version） | ✅ | 与 M5 第 6 项同一批，已完成并接入 `npm run check` |
 
 ## M7 装机与市场
 
 | # | 项 | 状态 | 证据 |
 | --- | --- | --- | --- |
-| 1 | 打包清单 | ✅ | `npm pack --dry-run` 35 文件；`files` 已补 `schema` / `import` / `demo` |
-| 2 | Desktop 装机实测 | ⬜ | 装修目录 = `~/Library/Application Support/dsh-desktop/harness/profiles/web` |
+| 1 | 打包清单 | ✅ | `npm pack` 产出 tgz，`files` 含 `schema` / `import` / `demo` / `lib` / `dsh` |
+| 2 | Desktop 装机实测 | ✅ | v0.3.3 tgz 装入 `~/Library/Application Support/dsh-desktop/harness/profiles/web`，宿主 `state.json` 认到包、`/api/health` 返回 200 |
 | 3 | 市场投稿 | ⬜ | — |
 | 4 | 落地页 / 官网 | ⬜ | — |
 
@@ -73,7 +73,7 @@
 
 ```
 M0 ──► M1 ──► G1✅ ──► M2 ──► G2✅ ──┐
-        └────► M3 ──► G3✅ ──────────┴──► M5(70%) ──► M6(70%) ──► M7(25%)
+        └────► M3 ──► G3✅ ──────────┴──► M5(81%) ──► M6(93%) ──► M7(50%)
 M4 ✅（临床库，与 M2 并行，已交叉验证）
 ```
 
@@ -81,15 +81,16 @@ M4 不阻塞 M2，但 M2 的「试验线索」页引用 M4 的字段结构。
 
 ## 仍未做（不许在验收里算通过）
 
-- `0004` 迁移：`candidate.source_line`（确认界面必须能看原文，否则只有数字没有依据）
-- 前端第 10 个视图「导入」：队列 + 候选逐条确认/退回
-- `scripts/check-schema` / `check-wording` / `check-version`；`docs/PARITY.csv` 真实对照
-- MinerU 云解析链路、设置页实现
-- dsh-desktop 装机实测、市场投稿、落地页
-- 真实患者访谈（招募 👤 与 🩺 补位中）
+- **M5 第 4 项的路径偏差**：前端走 `lib/client.js`（宿主模块加载器）而不是六步模板里的 `public/app.js`；要消除只能等宿主给等价入口，短期内按偏差记录。
+- **M5 第 8 项**：MinerU 云解析链路、设置页（`docs/SETTINGS-DESIGN.md` 只有设计）。
+- **M6 第 4 项的半分**：`--tz` 三档未接（`PARITY-05`）。
+- **三条 parity 缺口**：字号三档、档案切换、报告与导出（`PARITY-05 / 06 / 11`）。
+- **M7 后两项**：市场投稿、落地页。
+- 真实患者访谈（招募 👤 与 🩺 补位中）。
 
 ## 下一步（按顺序）
 
-1. `0004` + 导入视图 —— 把 M5 第 4/7 项的半分补成满分，导入功能才算对用户可用。
-2. 三项 check 脚本 + 填 `PARITY.csv` —— 把 M6 从 70% 推到 100%，装机前必须闭环。
-3. `npm pack` → Desktop 装机 → 目标机实测（M7 从 25% 起步）。
+1. `--tz` 三档 + 档案切换 —— parity 里唯一还能顺手清零的两条。
+2. 报告与导出：先写清脱敏与留痕边界（私密项不进导出），再动手。
+3. MinerU + 设置页 —— M5 最后一项，也是装机后的真实解析入口。
+4. 市场投稿与落地页（M7 最后两项）。

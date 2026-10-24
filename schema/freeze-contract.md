@@ -1,8 +1,9 @@
-# 冻结合同 · schema/0001_initial.sql + 0002_metrics_cbc.sql + 0003_import_gate.sql
+# 冻结合同 · schema/0001_initial.sql + 0002_metrics_cbc.sql + 0003_import_gate.sql + 0004_candidate_source.sql
 
 - 初冻日期：2026-10-22
 - 重新冻结日期：2026-10-24（**仅注释改动**：品牌名「小肝宝」→「小甘宝」，无表、列、CHECK、触发器、索引变更）
 - 追加迁移：2026-10-24（`0003_import_gate.sql`，只增一列 + 一索引，0001/0002 哈希不变）
+- 追加迁移：2026-10-24（`0004_candidate_source.sql`，只增两列，前三份哈希不变）
 - 状态：**G3 已签认（2026-10-24）**，见 `docs/GATE-RECORDS.md` G3 条目
 
 | 文件 | sha256 | 内容 |
@@ -10,6 +11,15 @@
 | `schema/0001_initial.sql` | `3051629ec9d3fff73df3ac796b87eb6da543a18d22d02843053e26164cf6bac9` | 24 张业务表、3 个触发器、初始 `metric_def` |
 | `schema/0002_metrics_cbc.sql` | `dd13be40bc0275452e4d7ad68d9caf103eb4333bb758847dc9a1272dbff2c88b` | 只增不改：补 wbc / anc / hgb / calf / grip 指标，加 `viewpoint.visibility` |
 | `schema/0003_import_gate.sql` | `eb51c0d8111741b6d40734e4adf474badef274d50b997b60df23838ed534cddb` | 只增不改：`document.parse_note` + `idx_document_profile_uploaded` |
+| `schema/0004_candidate_source.sql` | `d6752af22e22d6d495be2e070faa2c59355907b7007857048f1810a90fb14d29` | 只增不改：`candidate.source_line` + `candidate.note` |
+
+## 0004 为什么要加两列（不是功能膨胀）
+
+候选要人一条条确认，可确认界面上只有「白蛋白 38」这一个数字的话，用户没有可对照的东西——
+他没法判断 38 是抽对了还是抽错了，只能盲点。`source_line` 存抽出这一条时命中的原文行
+（如 `白蛋白 38 g/L`），界面上贴着数字显示；`note` 存抽取阶段的提示（如超范围降置信度时的说明）。
+
+这两列只做「让人能核对」，不参与任何计算，也不进趋势。
 
 ## 0003 为什么要加一列（不是功能膨胀）
 
@@ -38,7 +48,7 @@
 
 ## 内容边界（本文件声明过的关键约定）
 
-1. 本文件执行后冻结，改结构只能新增 `0004_*.sql`（`0002`、`0003` 已占用）。
+1. 本文件执行后冻结，改结构只能新增 `0005_*.sql`（`0002`–`0004` 已占用）。
 2. 缺测一律 NULL，不用 0 / '' 顶替；「未检测」由 `result_state` 表达。
 3. 分类变量（Child-Pugh、LI-RADS、Vp、CTCAE）只存原值，不做数值趋势。
 4. 医生结论（分期、可切除性）只新增版本，不覆盖旧值。
@@ -51,9 +61,9 @@
 ## 校验方式
 
 ```
-shasum -a 256 schema/000*.sql                                       # 应与上表一致
+npm run check:schema                                                # 与上表逐条比 sha256，并核对演示库 _migration
 NODE_OPTIONS= npm run build:demo                                    # 重建演示库并登记 _migration
 ```
 
-最近一次复核（2026-10-24，含 0003）：业务表 **24** 张（含 `_migration` 共 25）、列 **255**、触发器 **3**、索引 **20**、
-`PRAGMA foreign_key_check` **0 条**、`_migration` 登记三条且 sha256 与前 12 位一致。
+最近一次复核（2026-10-24，含 0004）：业务表 **24** 张（含 `_migration` 共 25）、列 **257**、触发器 **3**、索引 **20**、
+`PRAGMA foreign_key_check` **0 条**、`_migration` 登记四条，`scripts/check-schema.mjs` 校验 sha256 全等。

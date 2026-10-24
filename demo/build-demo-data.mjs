@@ -283,9 +283,46 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const insReading = db.prepare('INSERT INTO metric_reading (profile_id,metric_id,measured_on,value_num,unit,created_at) VALUES (?,?,?,?,?,?)');
   const CBC_UNIT = { wbc: '10⁹/L', anc: '10⁹/L', hgb: 'g/L' };
 
+  // 导入队列：演示库要能演示闸门的三种结局，否则「导入与候选」这一页打开是空的，
+  // 用户看不出域外材料长什么样、候选凭什么要人点头。
+  const insDoc = db.prepare(
+    `INSERT INTO document (profile_id,title,kind,doc_date,file_sha256,status,parse_note,uploaded_at)
+     VALUES (?,?,?,?,?,?,?,?)`,
+  );
+  const insCand = db.prepare(
+    `INSERT INTO candidate (document_id,field,value_text,value_num,unit,confidence,source_line,status,created_at)
+     VALUES (?,?,?,?,?,?,?,'pending',?)`,
+  );
+  const DEMO_DOCS = [
+    {
+      title: '外院化验单（2026-09-18）', kind: 'lab', date: '2026-09-18', sha: 'demo-lab-20260918',
+      status: 'pending_review',
+      note: '[gate] 部位词打平，但肝功能组合证据 4 项（白蛋白/胆红素/ALT/AST），按化验单接收',
+      cands: [
+        ['albumin', '38.6', 38.6, 'g/L', 0.95, '白蛋白 38.6 g/L'],
+        ['bilirubin', '24.1', 24.1, 'μmol/L', 0.95, '总胆红素 24.1 μmol/L'],
+        ['alt', '41', 41, 'U/L', 0.95, 'ALT 41 U/L'],
+        ['ast', '52', 52, 'U/L', 0.95, 'AST 52 U/L'],
+        ['platelets', '92', 92, '10⁹/L', 0.95, '血小板 92 10⁹/L'],
+      ],
+    },
+    {
+      title: '胰腺增强 CT 报告', kind: 'imaging', date: '2026-09-02', sha: 'demo-ct-pancreas',
+      status: 'parse_failed',
+      note: '[guard] 部位是胰腺（3 分：胰腺），不属于肝细胞癌工作台',
+      cands: [],
+    },
+    {
+      title: '门诊病历扫描件（2026-08-30）', kind: 'other', date: '2026-08-30', sha: 'demo-scan-20260830',
+      status: 'pending_parse',
+      note: '[guard] 线索不足：没有部位词，指标组合也不到 2 项；需要人看一眼这是不是肝的报告',
+      cands: [],
+    },
+  ];
+
   db.exec('BEGIN');
   try {
-    for (const p of profiles) {
+    for (const [index, p] of profiles.entries()) {
       insProfile.run(p.id, p.name, p.initial, p.age, p.sex, p.tag, now);
       insBg.run(p.id, p.etiology, p.cirrhosis, p.baseline, now);
       for (const s of p.stage) insStage.run(p.id, s.system, s.stage, s.statedBy, s.statedOn, s.basis, s.current ? 1 : 0, now);
@@ -320,6 +357,15 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       // 心理记录与「我想说的」同表不同 source：caregiver 的条目属于照护者自己，
       // 读模型必须能分开取，不能把家属的感受算成患者的症状。
       for (const x of p.mind || []) insView.run(p.id, x.on, x.topic, x.body, x.owner === 'caregiver' ? 'caregiver' : 'self', 'private', now);
+      if (index === 0) {
+        for (const doc of DEMO_DOCS) {
+          const r = insDoc.run(p.id, doc.title, doc.kind, doc.date, doc.sha, doc.status, doc.note, now);
+          const docId = Number(r.lastInsertRowid);
+          for (const [field, text, num, unit, conf, line] of doc.cands) {
+            insCand.run(docId, field, text, num, unit, conf, line, now);
+          }
+        }
+      }
     }
     db.exec('COMMIT');
   } catch (e) {
