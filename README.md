@@ -8,15 +8,19 @@
 
 先共创SPEC和候选数据关系，再交付HTML交互工作台；由用户确认对应版本/模块后，复核SCHEMA/API并实现生产功能。确认记录见docs/PROTOTYPE-REVIEW.md；模型不依赖前端Tab/流程。模板骨架不是业务已确认。
 
-## 项目当前状态（2026-10-22）
+## 项目当前状态（2026-10-24 · v0.3.2）
 
-阶段：M0 骨架 + M1 调研 + M2 原型 + M3 schema（冻结待签）+ M4 临床库。**G1 / G2 / G3 均未签认；未开发生产业务、未接入 DSH、未装机。**
+阶段：**M0–M4 完成，G1 / G2 / G3 均已签认**；M5 开发版 70%（九视图 + 导入链路已跑通，缺 MinerU 与设置页）、
+M6 自测 70%（75 条单测 + 生产版实跑全绿，缺 UI parity 与三项 check 脚本）、M7 装机 25%（仅打包清单就绪）。
+整体 81%，逐项口径见 [DEV-PLAN](docs/DEV-PLAN.md)。**尚未装机、未投稿。**
 
 | 交付物 | 位置 |
 | --- | --- |
 | 需求与场景 | `docs/SPEC.md`、`docs/SCENARIOS.md`（S1–S12）、`docs/PATIENT-FLOW.md`、`docs/DIFF-MATRIX.md`、`docs/HCC-DOMAIN.md` |
-| 数据模型 | `schema/0001_initial.sql`（24 表）+ `schema/freeze-contract.md` + `docs/SCHEMA-SPEC.md` |
+| 数据模型 | `schema/0001_initial.sql` + `0002_metrics_cbc.sql` + `0003_import_gate.sql`（24 表 / 255 列）+ `schema/freeze-contract.md` + `docs/SCHEMA-SPEC.md` |
 | HTML 原型 | `prototypes/v0.1/index.html`（`file://` 直接打开，无构建） |
+| 生产版 | `dsh/`（库 / 路由 / 读模型）+ `lib/client.js`（九视图）+ `import/`（导入五段） |
+| 导入链路 | `docs/IMPORT-PIPELINE.md`、`scripts/import-doc.mjs`；通用规则已回流脚手架 29 号文档 |
 | 演示数据 | `demo/build-demo-data.mjs`（唯一来源）→ `demo/demo-data.sqlite`、`prototypes/v0.1/demo-data.js` |
 | 2026 临床库 | `research/hcc-cancer/`（34 条，逐来源终态） |
 | 里程碑 | `docs/DEV-PLAN.md` |
