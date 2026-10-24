@@ -46,19 +46,40 @@ const PAGE = `<!doctype html><meta charset="utf-8">
     throw new Error('unexpected require: ' + name);
   };
   let mounted = null;
+  // 假宿主：会话归属、订阅、调起会话都按官方合同的最小面实现，
+  // 这样顶栏「AI 对话」按钮走的是真分支，而不是永远 disabled。
+  const listeners = new Set();
+  let currentId = null;
+  const conversationNode = document.createElement('div');
+  conversationNode.id = 'fake-conversation';
+  conversationNode.textContent = '原生会话占位（假宿主）';
+  conversationNode.style.padding = '16px';
+  conversationNode.style.fontSize = '13px';
   window.__ModuleLoader__ = {
     load({ id, factory }) {
       const mod = factory(require);
       const ctx = {
         effect(fn) { fn(); return () => {}; },
+        sessions: { scope() { return null; } },
         desktopWorkbenches: {
           register(meta, Component) { mounted = { meta, Component }; },
+          currentSession() { return currentId; },
+          ownsSession(id) { return id === currentId; },
+          subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); },
+          async ensureSession() {
+            currentId = 'probe-session-1';
+            listeners.forEach((fn) => fn());
+            return currentId;
+          },
         },
       };
+      window.__probeService__ = ctx.desktopWorkbenches;
       mod.apply(ctx);
       if (!mounted) throw new Error('workbench 没有注册');
+      window.__probeMeta__ = mounted.meta;
       document.title = mounted.meta.title;
-      ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(mounted.Component));
+      ReactDOM.createRoot(document.getElementById('root'))
+        .render(React.createElement(mounted.Component, { conversation: conversationNode }));
     },
   };
 </script>
@@ -135,6 +156,101 @@ try {
     throw e
   }
 
+  // 0) 面板骨架：语义 header 必须在首位、一级导航在侧栏、顶栏有 AI 对话按钮
+  const frame = await page.evaluate(() => {
+    const root = document.querySelector('.wb-liver-cancer-workbench')
+    const agent = document.querySelector('.wb-agent')
+    return {
+      firstTag: root.firstElementChild ? root.firstElementChild.tagName : '',
+      sideNav: document.querySelectorAll('.wb-side .wb-nav button').length,
+      agentLabel: (document.querySelector('.wb-btn-agent') || {}).textContent || '',
+      paneDisplay: agent ? getComputedStyle(agent).display : 'missing',
+      meta: window.__probeMeta__,
+    }
+  })
+  check(frame.firstTag === 'HEADER', `根节点首个子元素是 ${frame.firstTag}，必须是语义 header`)
+  check(frame.sideNav === 10, `侧栏一级导航 ${frame.sideNav} 项，应为 10`)
+  check(frame.meta?.customFrame === true, 'register 没有声明 customFrame')
+  check(frame.meta?.layout?.businessSide === 'left', 'layout.businessSide 不是 left')
+  check(frame.paneDisplay === 'none', `没有会话时会话区应隐藏，实际 display=${frame.paneDisplay}`)
+
+  // 0b) 点「AI 对话」调起会话 → 按钮文案翻转、会话区出现、splitter 出现
+  await page.evaluate(() => document.querySelector('.wb-btn-agent').click())
+  await page.waitForFunction(
+    () => document.querySelector('.wb-btn-agent').textContent === '收起 AI 对话',
+    { timeout: 6000 })
+  const opened = await page.evaluate(() => ({
+    pane: getComputedStyle(document.querySelector('.wb-agent')).display,
+    splitter: Boolean(document.querySelector('.wb-splitter')),
+    conv: Boolean(document.getElementById('fake-conversation')),
+  }))
+  check(opened.pane !== 'none', '调起会话后会话区仍是隐藏的')
+  check(opened.conv, '原生会话节点没被渲染进会话区')
+  check(opened.splitter, '宽屏下没有 splitter，调不了宽度')
+  mkdirSync(join(ROOT, 'prototypes/v0.1'), { recursive: true })
+  await page.screenshot({ path: join(ROOT, 'prototypes/v0.1/prod-view-agent.png') })
+
+  // 0c) 键盘调宽：← 应为 +2%，且写进 localStorage
+  const w0 = await page.evaluate(() => Number(document.querySelector('.wb-splitter').getAttribute('aria-valuenow')))
+  await page.focus('.wb-splitter')
+  await page.keyboard.press('ArrowLeft')
+  await page.waitForFunction((prev) => Number(document.querySelector('.wb-splitter').getAttribute('aria-valuenow')) > prev, { timeout: 3000 }, w0)
+  const w1 = await page.evaluate(() => Number(document.querySelector('.wb-splitter').getAttribute('aria-valuenow')))
+  const saved = await page.evaluate(() => localStorage.getItem('ganbao.liver.agent-pane.v1'))
+  check(w1 === w0 + 2, `键盘 ← 应 +2%，实际 ${w0} → ${w1}`)
+  check(Boolean(saved && JSON.parse(saved).width), '宽度没有写进 localStorage，重开就忘了')
+
+  // 0d) 鼠标拖动：往左拖应继续变宽
+  const box = await page.evaluate(() => {
+    const r = document.querySelector('.wb-splitter').getBoundingClientRect()
+    return { x: r.x + r.width / 2, y: r.y + r.height / 2 }
+  })
+  await page.mouse.move(box.x, box.y)
+  await page.mouse.down()
+  await page.mouse.move(box.x - 60, box.y, { steps: 5 })
+  await page.mouse.up()
+  const w2 = await page.evaluate(() => Number(document.querySelector('.wb-splitter').getAttribute('aria-valuenow')))
+  check(w2 > w1, `拖 splitter 没有变宽：${w1} → ${w2}`)
+
+  // 0e) 收起 → 只隐藏、不卸载会话；再打开回到同一栏
+  await page.evaluate(() => [...document.querySelectorAll('.wb-btn-ghost')].find((b) => b.textContent === '×').click())
+  const collapsed = await page.evaluate(() => ({
+    pane: getComputedStyle(document.querySelector('.wb-agent')).display,
+    label: document.querySelector('.wb-btn-agent').textContent,
+    splitter: Boolean(document.querySelector('.wb-splitter')),
+    convStillMounted: Boolean(document.getElementById('fake-conversation')),
+  }))
+  check(collapsed.pane === 'none', '点 × 后会话区没隐藏')
+  check(collapsed.label === '打开 AI 对话', `收起后按钮应显示「打开 AI 对话」，实际「${collapsed.label}」`)
+  check(!collapsed.splitter, '收起了还留着 splitter')
+  check(collapsed.convStillMounted, '收起把会话节点卸载了（输入框状态会丢）')
+
+  await page.evaluate(() => document.querySelector('.wb-btn-agent').click())
+  await page.waitForFunction(() => document.querySelector('.wb-btn-agent').textContent === '收起 AI 对话', { timeout: 3000 })
+
+  // 0f) 窄屏：侧栏折叠成横排、会话改覆盖式抽屉、splitter 消失
+  await page.setViewport({ width: 700, height: 900 })
+  await page.waitForFunction(() => !document.querySelector('.wb-splitter'), { timeout: 4000 })
+  const narrowState = await page.evaluate(() => ({
+    navDir: getComputedStyle(document.querySelector('.wb-side .wb-nav')).flexDirection,
+    sideCols: getComputedStyle(document.querySelector('.wb-business')).gridTemplateColumns.split(' ').length,
+    drawer: getComputedStyle(document.querySelector('.wb-agent')).position,
+  }))
+  check(narrowState.navDir === 'row', `窄屏一级导航应横排，实际 ${narrowState.navDir}`)
+  check(narrowState.sideCols === 1, `窄屏业务区应为单列，实际 ${narrowState.sideCols} 列`)
+  check(narrowState.drawer === 'absolute', '窄屏会话应为覆盖式抽屉')
+  await page.screenshot({ path: join(ROOT, 'prototypes/v0.1/prod-view-narrow.png') })
+
+  // 0g) 抽屉要能点遮罩关掉：不点遮罩的话手机上一个浮层盖住半个屏幕就没出口
+  await page.evaluate(() => document.querySelector('.wb-scrim').click())
+  await page.waitForFunction(
+    () => getComputedStyle(document.querySelector('.wb-agent')).display === 'none', { timeout: 3000 })
+  await page.evaluate(() => document.querySelector('.wb-btn-agent').click())
+  await page.waitForFunction(() => document.querySelector('.wb-btn-agent').textContent === '收起 AI 对话', { timeout: 3000 })
+
+  await page.setViewport({ width: 1280, height: 900 })
+  await page.waitForFunction(() => Boolean(document.querySelector('.wb-splitter')), { timeout: 4000 })
+
   // 1) 切到导入视图
   const tabs = await page.$$('.wb-nav button')
   const names = await Promise.all(tabs.map((t) => t.evaluate((n) => n.textContent)))
@@ -194,7 +310,6 @@ try {
   })
   check(rejected.includes('已退回'), '退回没有生效')
 
-  mkdirSync(join(ROOT, 'prototypes/v0.1'), { recursive: true })
   await page.screenshot({ path: join(ROOT, 'prototypes/v0.1/prod-view-import.png'), fullPage: true })
 
   check(errors.length === 0, `控制台报错：${errors.slice(0, 3).join(' | ')}`)

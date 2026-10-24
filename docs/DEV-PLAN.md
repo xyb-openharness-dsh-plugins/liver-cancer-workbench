@@ -1,9 +1,9 @@
 # DEV-PLAN · 里程碑（唯一权威）
 
-- 首次：2026-10-22 ｜ **本次更新：2026-10-24（v0.3.3 后重算）**
+- 首次：2026-10-22 ｜ **本次更新：2026-10-24（v0.3.4 后重算：面板骨架对齐乳腺癌）**
 - 闸口顺序不可跳：**G1 业务流程 → G2 HTML 交互 demo → G3 数据模型**。通过必须留痕（确认人 / 原话要点 / 日期 / 产物版本），截图与脚本检查不算签认。
 
-> 一句话：**M1–M4 全部完成且三闸口已签认，整体 90%；M5/M6 的欠账已清零（导入在界面闭环、三项 check、12 行真实 parity），剩下的都在 M5 的 MinerU/设置页 与 M7 的投稿/落地页。**
+> 一句话：**M1–M4 全部完成且三闸口已签认，整体 90%；M5/M6 的欠账已清零（导入在界面闭环、三项 check、12 行真实 parity、面板骨架按乳腺癌对齐），剩下的都在 M5 的 MinerU/设置页 与 M7 的投稿/落地页。**
 
 ## 进度总表
 
@@ -42,7 +42,7 @@
 | 1 | 库与服务入口 | ✅ | `dsh/db.js`（迁移只增不改 + 冻结合同）、`dsh/index.js`、`dsh/guard.js` |
 | 2 | 演示播种 | ✅ | `demo/build-demo-data.mjs`（唯一来源，按目录遍历迁移） |
 | 3 | 读模型 | ✅ | `dsh/read-model.js` 321 行，7 块 section + 5 个指标函数；ALBI 派生不落库 |
-| 4 | 前端 | 🟡 半分 | `lib/client.js` 约 860 行，十视图 + 18 张 3D 卡全通（含第 10 视图「导入与候选」：队列三态 / 候选带原文 / 确认 / 退回）；**偏差仍在**：走 React 组件而非六步要求的 `public/app.js` |
+| 4 | 前端 | 🟡 半分 | `lib/client.js` 约 1270 行，十视图 + 18 张 3D 卡全通（含第 10 视图「导入与候选」：队列三态 / 候选带原文 / 确认 / 退回）；v0.3.4 补齐 customFrame 面板骨架（左侧 236px 一级栏 + 顶栏「AI 对话」+ 可拖 25%–45% 的会话区 + 收起/重开 + 窄屏抽屉）；**偏差仍在**：走 React 组件而非六步要求的 `public/app.js` |
 | 5 | 导入链路 | ✅ | `import/` 五模块 + `scripts/import-doc.mjs` + 2 条只读路由（计划外新增） |
 | 6 | `scripts/check-*` | ✅ | 补齐 `check-schema`（冻结合同 sha256 + 演示库 `_migration`）/ `check-wording`（7 条红线，带反向用例）/ `check-version`（三方一致），已接进 `npm run check` |
 | 7 | 单测 | ✅ | **83 条全绿**（basic / api / read-model / import / store）+ `scripts/probe-prod-ui.mjs` 真 Chrome 冒烟（10 tab / 队列三态 / 确认写库 / 退回不写库） |
@@ -54,10 +54,10 @@
 | --- | --- | --- | --- |
 | 1 | `npm run check` | ✅ | `staticPass: true`、`errors: []` |
 | 2 | `npm test` | ✅ | 83/83，含域外拒收、近似词不误匹配、同日同指标拒绝重复、写路由方法闸 |
-| 3 | 生产版无头实跑 | ✅ | `probe-prod-ui.mjs`：10 tab / 看板 6 卡 / 队列三态 / 候选 5 条带原文 / 确认后 albumin 记录数 +1 / 退回变「已退回」/ `errs: []` |
+| 3 | 生产版无头实跑 | ✅ | `probe-prod-ui.mjs`：面板骨架 9 组断言（语义 header 首位 / 侧栏 10 项 / `customFrame` / 会话区开合 / 键盘 +2% / 拖动变宽 / 收起不卸载 / 窄屏三态 / 遮罩可关）+ 10 tab / 看板 6 卡 / 队列三态 / 候选 5 条带原文 / 确认后 albumin 记录数 +1 / 退回变「已退回」/ `errs: []` |
 | 4 | 三档字号与溢出断言 | 🟡 半分 | 只有 standard / large 二档；家族约定的 `--tz` 三档未接（见 `PARITY-05`） |
 | 5 | IM01–IM14 导入验收 | ✅ | 已全部写成 `test/import.test.mjs` + `test/store.test.mjs` |
-| 6 | UI parity 对照 | ✅ | `docs/PARITY.csv` 12 行真实对照：7 行一致/增强、3 行接受偏离、3 行实现缺口（字号三档 / 档案切换 / 报告导出） |
+| 6 | UI parity 对照 | ✅ | `docs/PARITY.csv` 12 行真实对照：7 行一致/增强、2 行接受偏离、3 行实现缺口（字号三档 / 档案切换 / 报告导出）；`PARITY-01` 从「接受偏离」改为「部分对齐（一级已对齐，二级仍内联）」 |
 | 7 | 三项脚本（schema / wording / version） | ✅ | 与 M5 第 6 项同一批，已完成并接入 `npm run check` |
 
 ## M7 装机与市场
@@ -65,7 +65,7 @@
 | # | 项 | 状态 | 证据 |
 | --- | --- | --- | --- |
 | 1 | 打包清单 | ✅ | `npm pack` 产出 tgz，`files` 含 `schema` / `import` / `demo` / `lib` / `dsh` |
-| 2 | Desktop 装机实测 | ✅ | v0.3.3 tgz 装入 `~/Library/Application Support/dsh-desktop/harness/profiles/web`，宿主 `state.json` 认到包、`/api/health` 返回 200 |
+| 2 | Desktop 装机实测 | ✅ | v0.3.4 tgz 装入 `~/Library/Application Support/dsh-desktop/harness/profiles/web`，宿主 `state.json` 认到包、`/api/health` 返回 200（**面板骨架需重启 Desktop 才生效**） |
 | 3 | 市场投稿 | ⬜ | — |
 | 4 | 落地页 / 官网 | ⬜ | — |
 
@@ -85,6 +85,7 @@ M4 不阻塞 M2，但 M2 的「试验线索」页引用 M4 的字段结构。
 - **M5 第 8 项**：MinerU 云解析链路、设置页（`docs/SETTINGS-DESIGN.md` 只有设计）。
 - **M6 第 4 项的半分**：`--tz` 三档未接（`PARITY-05`）。
 - **三条 parity 缺口**：字号三档、档案切换、报告与导出（`PARITY-05 / 06 / 11`）。
+- **`PARITY-01` 的二级 dock（27 项）**：一级栏已按乳腺癌对齐，二级仍以视图内分块呈现，不算完全对齐。
 - **M7 后两项**：市场投稿、落地页。
 - 真实患者访谈（招募 👤 与 🩺 补位中）。
 

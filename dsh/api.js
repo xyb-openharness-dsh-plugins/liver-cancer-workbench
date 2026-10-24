@@ -27,7 +27,7 @@ function intParam(value) {
   return Number.isInteger(n) && n > 0 ? n : null
 }
 
-export function createHandlers({ getDb, version }) {
+export function createHandlers({ getDb, version, dir = null }) {
   return [
     {
       path: `${API_PREFIX}/health`,
@@ -36,6 +36,8 @@ export function createHandlers({ getDb, version }) {
         body: {
           ok: true,
           version,
+          // 业务目录：客户端调起原生会话时要把 folder 传过去（空 folder 会被宿主拒绝）
+          dir,
           apiVersion: 'v1',
           capabilities: ['health', 'profiles', 'dashboard', 'metrics', 'viewpoints', 'sections',
             'documents', 'candidates', 'accept', 'reject'],
