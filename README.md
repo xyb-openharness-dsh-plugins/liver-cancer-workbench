@@ -8,30 +8,32 @@
 
 先共创SPEC和候选数据关系，再交付HTML交互工作台；由用户确认对应版本/模块后，复核SCHEMA/API并实现生产功能。确认记录见docs/PROTOTYPE-REVIEW.md；模型不依赖前端Tab/流程。模板骨架不是业务已确认。
 
-## 项目当前状态（2026-10-24 · v0.3.5）
+## 项目当前状态（2026-10-24 · v0.3.6）
 
-阶段：**M0–M4 完成，G1 / G2 / G3 均已签认**；M5 开发版 81%（十一视图 + 导入在界面里闭环，缺 MinerU 与设置页）、
-M6 自测 93%（83 条单测 + 三项 check 脚本 + 12 行真实 UI parity + 真 Chrome 冒烟）、M7 装机与市场 50%（打包与装机实测已做，缺投稿与落地页）。
-整体 90%，逐项口径见 [DEV-PLAN](docs/DEV-PLAN.md)。**尚未投稿。**
+阶段：**M0–M6 完成，G1 / G2 / G3 均已签认**；M5 开发版 94%（十二视图 + 导入与解析在界面里闭环，唯一半分是"前端没走 `public/app.js`"的路径偏差）、
+M6 自测 100%（111 条单测 + 三项 check 脚本 + 12 行真实 UI parity + 真 Chrome 冒烟 12 视图）、
+M7 装机与市场 50%（打包与装机实测已做；**投稿与落地页按用户指令本轮不发布**）。
+整体 94%，逐项口径见 [DEV-PLAN](docs/DEV-PLAN.md)。**尚未投稿。**
 
 | 交付物 | 位置 |
 | --- | --- |
 | 需求与场景 | `docs/SPEC.md`、`docs/SCENARIOS.md`（S1–S12）、`docs/PATIENT-FLOW.md`、`docs/DIFF-MATRIX.md`、`docs/HCC-DOMAIN.md` |
-| 数据模型 | `schema/0001`–`0004`（24 表 / 257 列，只增不改）+ `schema/freeze-contract.md`（逐条 sha256）+ `docs/SCHEMA-SPEC.md` |
+| 数据模型 | `schema/0001`–`0005`（25 表 / 266 列，只增不改）+ `schema/freeze-contract.md`（逐条 sha256，5 条迁移全登记）+ `docs/SCHEMA-SPEC.md` |
 | HTML 原型 | `prototypes/v0.1/index.html`（`file://` 直接打开，无构建） |
-| 生产版 | `dsh/`（库 / 10 条路由 / 读模型）+ `lib/client.js`（十一视图，含一图秀）+ `import/`（导入五段） |
-| 导入链路 | `docs/IMPORT-PIPELINE.md`、`scripts/import-doc.mjs`（命令行）、界面第 10 视图「导入与候选」；通用规则已回流脚手架 29 号文档 |
+| 生产版 | `dsh/`（库 / 13 条路由 / 读模型 / MinerU 解析）+ `lib/client.js`（十二视图，含一图秀与设置）+ `import/`（导入五段） |
+| 导入链路 | `docs/IMPORT-PIPELINE.md`、`scripts/import-doc.mjs`（命令行）、界面第 11 视图「导入与候选」；通用规则已回流脚手架 29 号文档 |
+| 扫描件解析 | `dsh/mineru.js`（MinerU API v4）/ `dsh/hccparse.js`（markdown → 行）/ `dsh/settings.js`（Token 唯一实现）/ 界面第 12 视图「设置」；本机 TXT·MD·CSV 不上云 |
 | 演示数据 | `demo/build-demo-data.mjs`（唯一来源）→ `demo/demo-data.sqlite`、`prototypes/v0.1/demo-data.js` |
 | 2026 临床库 | `research/hcc-cancer/`（34 条，逐来源终态） |
-| 自测 | `npm run check`（版本 / 冻结合同 / 文案红线三段）+ `npm test` 83 条 + `scripts/probe-prod-ui.mjs`（真 Chrome 冒烟）+ `docs/PARITY.csv`（12 行原型↔生产对照） |
+| 自测 | `npm run check`（版本 / 冻结合同 / 文案红线三段）+ `npm test` 111 条 + `scripts/probe-prod-ui.mjs`（真 Chrome 冒烟，12 视图 / 解析三态 / 设置页 / 三档字号）+ `docs/PARITY.csv`（12 行原型↔生产对照） |
 | 里程碑 | `docs/DEV-PLAN.md` |
 | 任务认领 | 组织 `.github` issue #10 |
 
-主脊是**双轨**：A 肝功能储备 / B 肿瘤负荷，两轨并列、永不加总；门脉高压是第三条独立风险线。一级导航 9 项、二级 27 项（v0.2.0 起；原为 7 项一级、无二级）。与家族其他癌种只有「复诊」语义重合；营养、心理两条线按 HCC 的实际问题重写，不是照抄乳腺癌。
+主脊是**双轨**：A 肝功能储备 / B 肿瘤负荷，两轨并列、永不加总；门脉高压是第三条独立风险线。一级导航 12 项、二级 27 项（v0.2.0 起为 9 项；v0.3.3 加「导入与候选」、v0.3.5 加「一图秀」、v0.3.6 加「设置」）。与家族其他癌种只有「复诊」语义重合；营养、心理两条线按 HCC 的实际问题重写，不是照抄乳腺癌。
 
 ## 当前能力
 
-- 一个 DSH 工作台注册、认证的健康接口、版本展示与标准/大字切换。
+- 一个 DSH 工作台注册、认证的健康接口、版本展示与**标准 / 大字 / 特大**三档字号（`--tz` 1 / 1.15 / 1.32）。
 - 已明确选择布局：business-first。business-first 使用 customFrame；模板不创建会话或复制聊天。需要 AI 协助时按官方合同接入原生 conversation 和会话管理。
 - 无业务数据库、无演示患者、无真实密钥；所有业务页按确认 spec 逐项实现。原型用的是合成演示数据。
 

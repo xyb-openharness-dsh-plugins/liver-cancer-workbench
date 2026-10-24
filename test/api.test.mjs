@@ -4,11 +4,14 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { mkdtempSync, writeFileSync, existsSync, rmSync } from 'node:fs'
+import { tmpdir, homedir } from 'node:os'
 import { openDatabase } from '../dsh/db.js'
 import { createHandlers, API_PREFIX } from '../dsh/api.js'
 import { makeGuard } from '../dsh/guard.js'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
+void tmpdir
 const DEMO = join(ROOT, 'demo', 'demo-data.sqlite')
 const VERSION = '0.3.0-test'
 
@@ -64,19 +67,25 @@ function seededDb() {
 
 test('路由都在统一前缀下，且能力清单与实现一致', () => {
   const { handlers } = harness()
-  assert.equal(handlers.length, 10)
+  assert.equal(handlers.length, 13)
   for (const r of handlers) assert.ok(r.path.startsWith(API_PREFIX + '/'))
   const health = handlers.find((r) => r.path.endsWith('/health')).run(new URL('http://x/health'))
   assert.deepEqual(
     health.body.capabilities.sort(),
-    ['accept', 'candidates', 'dashboard', 'documents', 'health', 'metrics', 'profiles', 'reject', 'sections', 'viewpoints'],
+    ['accept', 'candidates', 'dashboard', 'documents', 'health', 'metrics', 'mineru-settings', 'parse',
+      'profiles', 'reject', 'sections', 'viewpoints'],
   )
 })
 
-test('只有两条路由声明了 POST，其余必须是 GET', () => {
+test('写路由清单是显式的，其余必须是 GET', () => {
   const { handlers } = harness()
   const post = handlers.filter((r) => (r.methods || ['GET']).includes('POST')).map((r) => r.path)
-  assert.deepEqual(post.sort(), [`${API_PREFIX}/candidates/accept`, `${API_PREFIX}/candidates/reject`].sort())
+  assert.deepEqual(post.sort(), [
+    `${API_PREFIX}/candidates/accept`,
+    `${API_PREFIX}/candidates/reject`,
+    `${API_PREFIX}/documents/parse`,
+    `${API_PREFIX}/settings/mineru`,
+  ].sort())
   for (const r of handlers) {
     if (post.includes(r.path)) continue
     assert.deepEqual(r.methods || ['GET'], ['GET'], `${r.path} 不该接受写方法`)
@@ -252,4 +261,89 @@ test('health 能力清单包含 sections / documents / accept', async () => {
   for (const cap of ['sections', 'documents', 'accept', 'reject']) {
     assert.ok(r.json.capabilities.includes(cap), cap)
   }
+})
+
+/* ---------------- 设置与解析路由（v0.3.6） ----------------
+   这两条是"写"的入口里最容易出事的一对：Token 写错地方、解析把文档判死。
+   测试里把密钥文件指到临时目录，绝不碰用户家目录与仓库 .secrets。 */
+
+function tempRoot(tag = 'heppal-api') {
+  return mkdtempSync(join(homedir(), `.${tag}-`))
+}
+
+function settingsHarness() {
+  const dir = tempRoot()
+  const db = seededDb()
+  const env = { HEPPAL_MINERU_SECRET: join(dir, 'mineru.json') }
+  const handlers = createHandlers({ getDb: () => db, version: VERSION, dir: ROOT, root: dir, env })
+  const call = async (path, { method = 'GET', body } = {}) => {
+    // 路由按精确路径匹配（真实注册里 query 不参与匹配），带参的只放在这一处剥掉
+    const route = handlers.find((x) => x.path === path.split('?')[0])
+    const res = makeRes()
+    const guard = makeGuard({ connection: { requestRejection: () => undefined }, logger: { warn() {} } })
+    await guard(route)(fakeReq(method, path, body), res)
+    let json = null
+    try { json = res.body ? JSON.parse(res.body) : null } catch { json = { raw: res.body } }
+    return { status: res.status, json }
+  }
+  return { db, dir, env, call }
+}
+
+test('设置接口：GET 报未配置、POST 存后能读回掩码、clear 后回到未配置', async () => {
+  const { call, dir } = settingsHarness()
+  const first = await call(`${API_PREFIX}/settings/mineru`)
+  assert.equal(first.status, 200)
+  assert.equal(first.json.mineru.configured, false)
+  assert.equal(first.json.mineru.source, 'none')
+  assert.equal(first.json.mineru.token, undefined, '响应体里不能有 token 字段')
+
+  const saved = await call(`${API_PREFIX}/settings/mineru`, { method: 'POST', body: { token: 'sk-ui-manual-test-abcdef987654' } })
+  assert.equal(saved.status, 200)
+  assert.equal(saved.json.mineru.configured, true)
+  assert.equal(saved.json.mineru.source, 'file')
+  assert.equal(saved.json.mineru.masked, 'sk-u****54')
+  assert.equal(JSON.stringify(saved.json).includes('abcdef987654'), false, 'Token 原文不能回给界面')
+
+  const cleared = await call(`${API_PREFIX}/settings/mineru`, { method: 'POST', body: { action: 'clear' } })
+  assert.equal(cleared.status, 200)
+  assert.equal(cleared.json.mineru.configured, false)
+  rmSync(dir, { recursive: true, force: true })
+})
+
+test('设置接口：非法 Token 是 400 且不落盘（不能报成 500 让用户反复粘贴）', async () => {
+  const { call, dir, env } = settingsHarness()
+  const r = await call(`${API_PREFIX}/settings/mineru`, { method: 'POST', body: { token: 'has space' } })
+  assert.equal(r.status, 400)
+  assert.equal(existsSync(env.HEPPAL_MINERU_SECRET), false)
+  rmSync(dir, { recursive: true, force: true })
+})
+
+test('解析路由：没有 Token 的扫描件返回可重试错误，文档不被判死', async () => {
+  const { db, dir, env, call } = settingsHarness()
+  const scan = join(dir, 'scan.pdf')
+  writeFileSync(scan, '%PDF-1.4\n%%EOF')
+  const id = Number(db.prepare(
+    `INSERT INTO document (profile_id, title, kind, doc_date, file_path, file_sha256, status, uploaded_at)
+     VALUES ('p1','扫描件','other','2026-10-20',?,'sha-scan','pending_parse','2026-10-24T00:00:00Z')`,
+  ).run(scan).lastInsertRowid)
+  const r = await call(`${API_PREFIX}/documents/parse`, { method: 'POST', body: { id } })
+  assert.equal(r.status, 200)
+  assert.equal(r.json.error.code, 'NO_TOKEN')
+  assert.equal(r.json.retryable, true)
+  assert.equal(r.json.status, 'pending_parse')
+  assert.equal(db.prepare('SELECT status FROM document WHERE id = ?').get(id).status, 'pending_parse')
+  const jobs = await call(`${API_PREFIX}/documents/jobs?doc=${id}`, {})
+  assert.equal(jobs.json.jobs.length, 1)
+  assert.equal(jobs.json.jobs[0].errorCode, 'NO_TOKEN')
+  void env
+  rmSync(dir, { recursive: true, force: true })
+})
+
+test('解析路由缺 id 返回 400；GET 走解析返回 405', async () => {
+  const { call, dir } = settingsHarness()
+  const bad = await call(`${API_PREFIX}/documents/parse`, { method: 'POST', body: {} })
+  assert.equal(bad.status, 400)
+  const wrongMethod = await call(`${API_PREFIX}/documents/parse`, {})
+  assert.equal(wrongMethod.status, 405)
+  rmSync(dir, { recursive: true, force: true })
 })

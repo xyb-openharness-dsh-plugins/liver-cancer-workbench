@@ -13,7 +13,8 @@
 // 用法：node scripts/probe-prod-ui.mjs [--keep]
 // 退出码：0 全通过 / 1 有断言失败
 import { join } from 'node:path'
-import { startHarness, launchBrowser, ensureShotDir } from './harness.mjs'
+import { readFileSync, statSync, existsSync } from 'node:fs'
+import { startHarness, launchBrowser, ensureShotDir, ROOT } from './harness.mjs'
 
 const SHOT = ensureShotDir()
 const harness = await startHarness()
@@ -52,7 +53,7 @@ try {
     }
   })
   check(frame.firstTag === 'HEADER', `根节点首个子元素是 ${frame.firstTag}，必须是语义 header`)
-  check(frame.sideNav === 11, `侧栏一级导航 ${frame.sideNav} 项，应为 11`)
+  check(frame.sideNav === 12, `侧栏一级导航 ${frame.sideNav} 项，应为 12`)
   check(frame.meta?.customFrame === true, 'register 没有声明 customFrame')
   check(frame.meta?.layout?.businessSide === 'left', 'layout.businessSide 不是 left')
   check(frame.paneDisplay === 'none', `没有会话时会话区应隐藏，实际 display=${frame.paneDisplay}`)
@@ -139,7 +140,7 @@ try {
   // 1) 切到导入视图
   const tabs = await page.$$('.wb-nav button')
   const names = await Promise.all(tabs.map((t) => t.evaluate((n) => n.textContent)))
-  check(names.length === 11, `导航是 ${names.length} 项，应为 11：${names.join('/')}`)
+  check(names.length === 12, `导航是 ${names.length} 项，应为 12：${names.join('/')}`)
   await page.evaluate(() => {
     const b = [...document.querySelectorAll('.wb-nav button')].find((n) => n.textContent === '导入与候选')
     b.click()
@@ -152,7 +153,7 @@ try {
     status: r.querySelector('.wb-st').textContent,
     note: r.querySelector('.csrc') ? r.querySelector('.csrc').textContent : '',
   })))
-  check(queue.length === 3, `队列 ${queue.length} 份，应为 3`)
+  check(queue.length === 4, `队列 ${queue.length} 份，应为 4`)
   check(queue.some((q) => q.status === '未接收' && q.note.startsWith('[guard]')), '域外材料的状态或理由没显示出来')
   check(queue.some((q) => q.status === '线索不足'), '线索不足的文件没有单独状态')
   check(queue.some((q) => q.status === '待确认'), '没有待确认的文件')
@@ -197,7 +198,126 @@ try {
 
   await page.screenshot({ path: join(SHOT, 'prod-view-import.png'), fullPage: true })
 
-  // 6) 一图秀：左栏勾选上限 4 条、画布出线、点记录点能固定详情、范围 chips 生效
+  // 6) 解析：演示库三份原件正好是闸门的三种结局，逐个点一遍——
+  //    只测"按钮存在"是不够的，之前就吃过"按钮在、点了没反应"的亏。
+  const PARSE_ROWS = await page.$$eval('.wb-qrow-wrap', (ws) => ws.map((w) => ({
+    title: w.querySelector('b').textContent,
+    label: w.querySelector('.wb-qparse') ? w.querySelector('.wb-qparse').textContent : '',
+  })))
+  check(PARSE_ROWS.filter((r) => r.label).length === 3,
+    `带解析按钮的队列行 ${PARSE_ROWS.filter((r) => r.label).length} 行，应为 3（待解析 2 + 解析失败 1）`)
+
+  const clickParse = async (title) => {
+    await page.evaluate((t) => {
+      const w = [...document.querySelectorAll('.wb-qrow-wrap')].find((n) => n.querySelector('b').textContent === t)
+      if (!w) throw new Error('队列里没有这一行：' + t)
+      w.querySelector('.wb-qparse').click()
+    }, title)
+    await page.waitForFunction(() => {
+      const b = document.querySelector('.wb-notice[data-tone=info] b')
+      return Boolean(b && b.textContent.includes('解析完成'))
+    }, { timeout: 20000 })
+    return page.evaluate(() => document.querySelector('.wb-notice[data-tone=info] b').textContent)
+  }
+
+  const okNote = await clickParse('肝外科门诊病历（2026-08-28）')
+  check(/5 条候选/.test(okNote) && /待确认/.test(okNote), `通过闸门那份的解析结果不对：${okNote}`)
+  await page.evaluate(() => {
+    const w = [...document.querySelectorAll('.wb-qrow-wrap')].find((n) => n.querySelector('b').textContent === '肝外科门诊病历（2026-08-28）')
+    w.querySelector('.wb-qrow').click()
+  })
+  await page.waitForSelector('.wb-cand', { timeout: 8000 })
+  const parsedCands = await page.$$eval('.wb-cand', (rows) => rows.map((r) => r.querySelector('.cfield').textContent))
+  check(parsedCands.length === 5, `解析后候选 ${parsedCands.length} 条，应为 5：${parsedCands.join('/')}`)
+  check(parsedCands.includes('白蛋白') && parsedCands.includes('总胆红素'),
+    `解析出的字段不像化验单：${parsedCands.join('/')}`)
+
+  const poorNote = await clickParse('常规体检报告（2026-08-12）')
+  check(/0 条候选/.test(poorNote) && /线索不足/.test(poorNote), `线索不足那份的解析结果不对：${poorNote}`)
+  const offNote = await clickParse('胰腺增强 CT 报告')
+  check(/0 条候选/.test(offNote) && /未接收/.test(offNote), `域外那份的解析结果不对（不该抽出候选）：${offNote}`)
+  check(!/mineru\.net\/apiManage\/token/.test(offNote), '本机解析不该弹出 Token 申请入口')
+  await page.screenshot({ path: join(SHOT, 'prod-view-parse.png'), fullPage: true })
+
+  // 7) 设置页：Token 只进文件不回界面、三档字号共用一个开关
+  await page.evaluate(() => {
+    const b = [...document.querySelectorAll('.wb-nav button')].find((n) => n.textContent === '设置')
+    b.click()
+  })
+  await page.waitForSelector('.wb-set-tiers', { timeout: 8000 })
+  await page.waitForFunction(() => [...document.querySelectorAll('.wb-set-main b')]
+    .every((b) => !b.textContent.includes('正在读取状态')), { timeout: 8000 })
+  const settings = await page.evaluate(() => ({
+    tiers: document.querySelectorAll('.wb-tier').length,
+    checked: [...document.querySelectorAll('.wb-tier')].filter((b) => b.getAttribute('aria-checked') === 'true').length,
+    inputType: (document.querySelector('.wb-input') || {}).type,
+    mains: [...document.querySelectorAll('.wb-set-main b')].map((b) => b.textContent),
+    hint: (document.querySelector('.wb-set-form + p, .wb-set-note') || {}).textContent || '',
+  }))
+  check(settings.tiers === 3 && settings.checked === 1,
+    `字号档位 ${settings.tiers} 个 / 选中 ${settings.checked} 个，应为 3 / 1`)
+  check(settings.inputType === 'password', 'Token 输入框不是 password 类型（会明文露在屏幕上）')
+  check(settings.mains.some((t) => t.includes('尚未配置')), `没配 Token 时状态文案不明确：${settings.mains.join(' | ')}`)
+  check(settings.mains.some((t) => t.includes(ROOT)), '资料目录没显示出来')
+
+  const TOKEN = 'sk-probe000000000054'
+  await page.type('.wb-input', TOKEN)
+  await page.evaluate(() => [...document.querySelectorAll('.wb-set-form .wb-btn')]
+    .find((b) => b.textContent === '保存').click())
+  await page.waitForFunction(() => [...document.querySelectorAll('.wb-set-main b')]
+    .some((b) => b.textContent.includes('当前生效')), { timeout: 8000 })
+  const savedToken = await page.evaluate(() => {
+    const b = [...document.querySelectorAll('.wb-set-main b')].find((x) => x.textContent.includes('当前生效'))
+    return {
+      label: b.textContent,
+      tone: b.getAttribute('data-tone'),
+      leakedDom: document.body.innerHTML.includes('sk-probe000000000054'),
+      inputValue: document.querySelector('.wb-input').value,
+      clearEnabled: ![...document.querySelectorAll('.wb-set-form .wb-btn')]
+        .find((x) => x.textContent === '清除').disabled,
+    }
+  })
+  check(savedToken.label.includes('sk-p****54'), `掩码不对（应只露首 4 尾 2）：${savedToken.label}`)
+  check(savedToken.tone === 'ok', `保存后状态色是 ${savedToken.tone}，应表示"已保存到文件"`)
+  check(!savedToken.leakedDom, 'Token 原文出现在 DOM 里了')
+  check(savedToken.inputValue === '', '保存后输入框没清空，明文还留在屏幕上')
+  check(savedToken.clearEnabled, '保存后「清除」还是禁用状态')
+
+  // 落盘才算数：界面掩码可以是假的，文件权限与内容不会
+  const secret = JSON.parse(readFileSync(harness.secretPath, 'utf8'))
+  const mode = (statSync(harness.secretPath).mode & 0o777).toString(8)
+  check(secret.token === TOKEN, 'Token 没真正写进密钥文件')
+  check(mode === '600', `密钥文件权限是 ${mode}，应为 600`)
+
+  await page.evaluate(() => [...document.querySelectorAll('.wb-set-form .wb-btn')]
+    .find((b) => b.textContent === '清除').click())
+  await page.waitForFunction(() => [...document.querySelectorAll('.wb-set-main b')]
+    .some((b) => b.textContent.includes('尚未配置')), { timeout: 8000 })
+  check(!existsSync(harness.secretPath), '清除后密钥文件还在，应该连文件一起删掉')
+
+  // 7b) 三档字号：一个变量乘到每一处，所以标题必须真的变大
+  const sizeOf = () => page.evaluate(() => parseFloat(getComputedStyle(document.querySelector('h1')).fontSize))
+  const pickTier = async (label) => {
+    await page.evaluate((t) => [...document.querySelectorAll('.wb-tier')]
+      .find((b) => b.textContent.includes(t)).click(), label)
+  }
+  const s0 = await sizeOf()
+  await pickTier('大字')
+  await page.waitForFunction(() => document.querySelector('.wb-liver-cancer-workbench').getAttribute('data-tz') === 'md', { timeout: 3000 })
+  const s1 = await sizeOf()
+  await pickTier('特大')
+  await page.waitForFunction(() => document.querySelector('.wb-liver-cancer-workbench').getAttribute('data-tz') === 'lg', { timeout: 3000 })
+  const s2 = await sizeOf()
+  const tzSaved = await page.evaluate(() => localStorage.getItem('ganbao.liver.font-scale.v1'))
+  check(s0 > 0 && s1 > s0 && s2 > s1, `三档字号没逐级变大：${s0} → ${s1} → ${s2}`)
+  check(tzSaved === 'lg', `字号档位没写进 localStorage：${tzSaved}`)
+  check(Math.abs(s1 / s0 - 1.15) < 0.05 && Math.abs(s2 / s0 - 1.32) < 0.05,
+    `档位倍数不对（应为 1.15 / 1.32）：${(s1 / s0).toFixed(3)} / ${(s2 / s0).toFixed(3)}`)
+  await page.screenshot({ path: join(SHOT, 'prod-view-settings.png'), fullPage: true })
+  await pickTier('标准')
+  await page.waitForFunction(() => document.querySelector('.wb-liver-cancer-workbench').getAttribute('data-tz') === 'sm', { timeout: 3000 })
+
+  // 8) 一图秀：左栏勾选上限 4 条、画布出线、点记录点能固定详情、范围 chips 生效
   await page.evaluate(() => {
     const b = [...document.querySelectorAll('.wb-nav button')].find((n) => n.textContent === '一图秀')
     b.click()
@@ -221,7 +341,7 @@ try {
   check(onePage.legend === onePage.picked, `图例 ${onePage.legend} 条与选中 ${onePage.picked} 条不一致`)
   check(onePage.txBands > 0, '治疗条没画出来')
 
-  // 6b) 上限：再点两条不应超过 4
+  // 8b) 上限：再点两条不应超过 4
   await page.evaluate(() => {
     const items = [...document.querySelectorAll('.wb-op-item')]
     const off = items.filter((b) => b.getAttribute('aria-checked') === 'false')
@@ -230,7 +350,7 @@ try {
   await page.waitForFunction(() => [...document.querySelectorAll('.wb-op-item')]
     .filter((b) => b.getAttribute('aria-checked') === 'true').length === 4, { timeout: 3000 })
 
-  // 6c) 点一个记录点 → 详情固定
+  // 8c) 点一个记录点 → 详情固定
   await page.evaluate(() => {
     const dot = document.querySelector('.wb-op-canvas svg circle[fill="#fff"]')
     dot.dispatchEvent(new MouseEvent('click', { bubbles: true }))
@@ -239,7 +359,7 @@ try {
   const detail = await page.evaluate(() => document.querySelector('.wb-op-detail').textContent)
   check(/前一次|最早/.test(detail), `详情里没有可与前次比较的说明：${detail}`)
 
-  // 6d) 缩放滑杆：拉到 25% 仍然有线（只是窗口变窄）
+  // 8d) 缩放滑杆：拉到 25% 仍然有线（只是窗口变窄）
   await page.evaluate(() => {
     const input = document.querySelector('.wb-op-slider input')
     const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set
@@ -263,4 +383,4 @@ if (fails.length) {
   for (const f of fails) console.error(`  - ${f}`)
   process.exit(1)
 }
-console.log('UI 冒烟通过：11 个视图、会话元素按 React 子节点渲染、一图秀 4 条上限与点选详情、导入队列三态、候选带原文、确认写库、退回不写库、无控制台报错。')
+console.log('UI 冒烟通过：12 个视图、会话元素按 React 子节点渲染、一图秀 4 条上限与点选详情、导入队列三态、候选带原文、确认写库、退回不写库、无控制台报错、设置页 Token 只落文件、三档字号逐级生效、解析三态与实际闸门一致。')

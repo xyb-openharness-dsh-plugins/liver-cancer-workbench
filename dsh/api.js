@@ -1,10 +1,12 @@
 // 路由表：纯函数，不依赖宿主、不碰 res。
 // 每个 handler 接收 (URL, body) 返回 { status, body }，这样单测不需要假 res，也不会把 HTTP 细节混进业务。
 //
-// 读路由多数；写路由只有两条，都在导入链路里（确认 / 退回候选）。写路由必须显式声明 methods。
+// 读路由多数；写路由四条：确认 / 退回候选、存/清解析 Token、发起解析。写路由必须显式声明 methods。
 import { listProfiles, getDashboard, listMetrics, listViewpoints, getSections } from './read-model.js'
 import { listDocuments, listCandidates, acceptCandidate, rejectCandidate } from '../import/store.mjs'
 import { describeDatabase } from './db.js'
+import { mineruSettingsStatus, saveMineruToken, clearMineruToken, secretFile } from './settings.js'
+import { parseDocument, listParseJobs } from './parse.js'
 
 export const API_PREFIX = '/api/liver-cancer-workbench'
 
@@ -27,7 +29,12 @@ function intParam(value) {
   return Number.isInteger(n) && n > 0 ? n : null
 }
 
-export function createHandlers({ getDb, version, dir = null }) {
+export function createHandlers({ getDb, version, dir = null, root = dir || process.cwd(), env = process.env }) {
+  // Token 的读写只有一份实现（dsh/settings.js）：路由不自己拼路径、不自己解析 JSON。
+  const secretPath = secretFile({ root, env })
+  const currentStatus = () => mineruSettingsStatus({ file: secretPath, root, env })
+  // 清 Token 后立刻回读状态：清除后可能还剩一把环境变量里的 Key，界面要能看出这一点
+  const clearAndStatus = () => { clearMineruToken({ file: secretPath, root, env }); return currentStatus() }
   return [
     {
       path: `${API_PREFIX}/health`,
@@ -40,7 +47,9 @@ export function createHandlers({ getDb, version, dir = null }) {
           dir,
           apiVersion: 'v1',
           capabilities: ['health', 'profiles', 'dashboard', 'metrics', 'viewpoints', 'sections',
-            'documents', 'candidates', 'accept', 'reject'],
+            'documents', 'candidates', 'accept', 'reject',
+            // 前端据此决定是否显示 Token 输入框与「解析」按钮：旧宿主 + 新前端时不会出现点了没反应的按钮
+            'mineru-settings', 'parse'],
           database: describeDatabase(getDb()),
         },
       }),
@@ -100,6 +109,49 @@ export function createHandlers({ getDb, version, dir = null }) {
         const docId = intParam(url.searchParams.get('doc'))
         if (!docId) return bad('缺少 doc 参数')
         return { status: 200, body: { candidates: listCandidates(getDb(), docId) } }
+      },
+    },
+    {
+      path: `${API_PREFIX}/settings/mineru`,
+      // GET 给状态、POST 存/清：只读状态是半成品，用户换 Key 还得去改文件
+      methods: ['GET', 'POST'],
+      run: (url, body) => {
+        // 没有命令就当查询：GET 的 body 是 null，某些调用方会给 {}——两种都不能当成"存空 Token"
+        if (!body || (body.action === undefined && body.token === undefined)) {
+          return { status: 200, body: { mineru: currentStatus() } }
+        }
+        const action = body.action
+        try {
+          if (action === 'clear') return { status: 200, body: { mineru: clearAndStatus() } }
+          if (action !== undefined && action !== null && action !== 'save') {
+            return bad('不认识的设置动作')
+          }
+          saveMineruToken({ token: body.token, file: secretPath, root, env })
+          return { status: 200, body: { mineru: currentStatus() } }
+        } catch (error) {
+          // 400 与 500 必须分开：把环境问题报成"格式不对"，用户会反复粘贴同一个正确的 Token
+          if (error.code === 'invalid_token') return { status: 400, body: { error: error.message, field: 'token' } }
+          if (error.code === 'settings_write_failed') return { status: 500, body: { error: error.message } }
+          throw error
+        }
+      },
+    },
+    {
+      path: `${API_PREFIX}/documents/parse`,
+      methods: ['POST'],
+      run: async (url, body) => {
+        const id = intParam(body?.id)
+        if (!id) return bad('缺少材料 id')
+        const out = await parseDocument(getDb(), id, { root, env })
+        return { status: 200, body: out }
+      },
+    },
+    {
+      path: `${API_PREFIX}/documents/jobs`,
+      run: (url) => {
+        const id = intParam(url.searchParams.get('doc'))
+        if (!id) return bad('缺少 doc 参数')
+        return { status: 200, body: { jobs: listParseJobs(getDb(), id) } }
       },
     },
     {

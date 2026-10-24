@@ -285,9 +285,11 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 
   // 导入队列：演示库要能演示闸门的三种结局，否则「导入与候选」这一页打开是空的，
   // 用户看不出域外材料长什么样、候选凭什么要人点头。
+  // file_path 走仓库相对路径：演示库由脚本生成、可重建，绝对路径换台机器就失效。
+  // dsh/parse.js 对相对路径按 root 解析，所以这里的 'demo/files/xxx' 在桌面端也读得到。
   const insDoc = db.prepare(
-    `INSERT INTO document (profile_id,title,kind,doc_date,file_sha256,status,parse_note,uploaded_at)
-     VALUES (?,?,?,?,?,?,?,?)`,
+    `INSERT INTO document (profile_id,title,kind,doc_date,file_path,file_sha256,status,parse_note,uploaded_at)
+     VALUES (?,?,?,?,?,?,?,?,?)`,
   );
   const insCand = db.prepare(
     `INSERT INTO candidate (document_id,field,value_text,value_num,unit,confidence,source_line,status,created_at)
@@ -308,12 +310,23 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     },
     {
       title: '胰腺增强 CT 报告', kind: 'imaging', date: '2026-09-02', sha: 'demo-ct-pancreas',
+      file: 'demo/files/ct-pancreas-20260902.txt',
       status: 'parse_failed',
       note: '[guard] 部位是胰腺（3 分：胰腺），不属于肝细胞癌工作台',
       cands: [],
     },
     {
-      title: '门诊病历扫描件（2026-08-30）', kind: 'other', date: '2026-08-30', sha: 'demo-scan-20260830',
+      // 这一份带真实原件，且闸门会放行——演示"点解析 → 出现候选 → 人点头才进指标"
+      title: '肝外科门诊病历（2026-08-28）', kind: 'other', date: '2026-08-28', sha: 'demo-visit-20260828',
+      file: 'demo/files/visit-note-20260828.txt',
+      status: 'pending_parse',
+      note: '[guard] 待解析：原件是本机文本，点「解析」当场读一遍',
+      cands: [],
+    },
+    {
+      // 这一份也有原件，但线索不足：解析会跑完、候选 0 条、仍留在待解析等人看
+      title: '常规体检报告（2026-08-12）', kind: 'other', date: '2026-08-12', sha: 'demo-checkup-20260812',
+      file: 'demo/files/checkup-20260812.txt',
       status: 'pending_parse',
       note: '[guard] 线索不足：没有部位词，指标组合也不到 2 项；需要人看一眼这是不是肝的报告',
       cands: [],
@@ -359,7 +372,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       for (const x of p.mind || []) insView.run(p.id, x.on, x.topic, x.body, x.owner === 'caregiver' ? 'caregiver' : 'self', 'private', now);
       if (index === 0) {
         for (const doc of DEMO_DOCS) {
-          const r = insDoc.run(p.id, doc.title, doc.kind, doc.date, doc.sha, doc.status, doc.note, now);
+          const r = insDoc.run(p.id, doc.title, doc.kind, doc.date, doc.file || null, doc.sha, doc.status, doc.note, now);
           const docId = Number(r.lastInsertRowid);
           for (const [field, text, num, unit, conf, line] of doc.cands) {
             insCand.run(docId, field, text, num, unit, conf, line, now);

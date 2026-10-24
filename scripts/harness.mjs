@@ -80,7 +80,13 @@ export async function startHarness() {
   const db = openDatabase(dbPath)
   // dir 必须传：与 dsh/index.js 保持一致。客户端调起会话时把 health.dir 当 folder 传，
   // 假宿主少传这一项，真机才会出现的"没有资料目录"分支反而测不到（也会把正常分支测挂）。
-  const handlers = createHandlers({ getDb: () => db, version: 'probe', dir: ROOT })
+  // env 只给一个对象：Token 的落盘位置指到临时目录，探针绝不往 ~/.heppal 或仓库 .secrets 里写；
+  // 同时环境里没有 MINERU_TOKEN，云端解析不会真的联网（要验的就是"没 Key 时的表现"）。
+  const secretPath = join(tmp, 'mineru.json')
+  const handlers = createHandlers({
+    getDb: () => db, version: 'probe', dir: ROOT, root: ROOT,
+    env: { HEPPAL_MINERU_SECRET: secretPath },
+  })
 
   const server = createServer((req, res) => {
     const url = new URL(req.url, 'http://127.0.0.1')
@@ -117,7 +123,9 @@ export async function startHarness() {
           return
         }
       }
-      Promise.resolve(route.run(url, body))
+      // GET 的 body 必须是 null（dsh/guard.js 就是这么传的）：假宿主传 {} 的话，
+      // "有没有请求体"这个判断在探针里会走成写分支，而真机永远走读分支。
+      Promise.resolve(route.run(url, req.method === 'GET' ? null : body))
         .then((out) => res.writeHead(out.status, { 'content-type': 'application/json; charset=utf-8' }).end(JSON.stringify(out.body)))
         .catch((e) => res.writeHead(500).end(JSON.stringify({ error: e.message })))
     })
@@ -127,6 +135,8 @@ export async function startHarness() {
   const port = server.address().port
   return {
     base: `http://127.0.0.1:${port}`,
+    // 探针要能直接验"Token 真写进文件了、权限是 600"——只靠界面上的掩码证明不了落盘
+    secretPath,
     async close({ keep = false } = {}) {
       server.close()
       db.close()
