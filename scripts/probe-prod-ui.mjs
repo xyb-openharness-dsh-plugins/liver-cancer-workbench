@@ -52,7 +52,7 @@ try {
     }
   })
   check(frame.firstTag === 'HEADER', `根节点首个子元素是 ${frame.firstTag}，必须是语义 header`)
-  check(frame.sideNav === 10, `侧栏一级导航 ${frame.sideNav} 项，应为 10`)
+  check(frame.sideNav === 11, `侧栏一级导航 ${frame.sideNav} 项，应为 11`)
   check(frame.meta?.customFrame === true, 'register 没有声明 customFrame')
   check(frame.meta?.layout?.businessSide === 'left', 'layout.businessSide 不是 left')
   check(frame.paneDisplay === 'none', `没有会话时会话区应隐藏，实际 display=${frame.paneDisplay}`)
@@ -66,9 +66,12 @@ try {
     pane: getComputedStyle(document.querySelector('.wb-agent')).display,
     splitter: Boolean(document.querySelector('.wb-splitter')),
     conv: Boolean(document.getElementById('fake-conversation')),
+    // 真宿主交给我们的是 React 元素，必须当子节点渲染；appendChild 那条路会挂不上
+    convInPane: Boolean(document.querySelector('.wb-agent #fake-conversation')),
   }))
   check(opened.pane !== 'none', '调起会话后会话区仍是隐藏的')
   check(opened.conv, '原生会话节点没被渲染进会话区')
+  check(opened.convInPane, '原生会话元素没有作为 React 子节点渲染进 .wb-agent（真机会是空面板）')
   check(opened.splitter, '宽屏下没有 splitter，调不了宽度')
   await page.screenshot({ path: join(SHOT, 'prod-view-agent.png') })
 
@@ -136,7 +139,7 @@ try {
   // 1) 切到导入视图
   const tabs = await page.$$('.wb-nav button')
   const names = await Promise.all(tabs.map((t) => t.evaluate((n) => n.textContent)))
-  check(names.length === 10, `导航是 ${names.length} 项，应为 10：${names.join('/')}`)
+  check(names.length === 11, `导航是 ${names.length} 项，应为 11：${names.join('/')}`)
   await page.evaluate(() => {
     const b = [...document.querySelectorAll('.wb-nav button')].find((n) => n.textContent === '导入与候选')
     b.click()
@@ -194,6 +197,61 @@ try {
 
   await page.screenshot({ path: join(SHOT, 'prod-view-import.png'), fullPage: true })
 
+  // 6) 一图秀：左栏勾选上限 4 条、画布出线、点记录点能固定详情、范围 chips 生效
+  await page.evaluate(() => {
+    const b = [...document.querySelectorAll('.wb-nav button')].find((n) => n.textContent === '一图秀')
+    b.click()
+  })
+  await page.waitForSelector('.wb-onepage svg', { timeout: 8000 })
+  const onePage = await page.evaluate(() => {
+    const items = [...document.querySelectorAll('.wb-op-item')]
+    return {
+      rail: Boolean(document.querySelector('.wb-op-rail')),
+      items: items.length,
+      picked: items.filter((b) => b.getAttribute('aria-checked') === 'true').length,
+      paths: document.querySelectorAll('.wb-op-canvas svg path').length,
+      labels: [...document.querySelectorAll('.wb-op-canvas svg text')].length,
+      legend: document.querySelectorAll('.wb-op-legend span').length,
+      txBands: document.querySelectorAll('.wb-op-canvas svg rect').length,
+    }
+  })
+  check(onePage.rail && onePage.items >= 8, `一图秀左栏应有可选指标，实际 ${onePage.items} 项`)
+  check(onePage.picked === 4, `默认应选 4 条，实际 ${onePage.picked}`)
+  check(onePage.paths >= 2, `画布上的线只有 ${onePage.paths} 条`)
+  check(onePage.legend === onePage.picked, `图例 ${onePage.legend} 条与选中 ${onePage.picked} 条不一致`)
+  check(onePage.txBands > 0, '治疗条没画出来')
+
+  // 6b) 上限：再点两条不应超过 4
+  await page.evaluate(() => {
+    const items = [...document.querySelectorAll('.wb-op-item')]
+    const off = items.filter((b) => b.getAttribute('aria-checked') === 'false')
+    off[0].click(); off[1].click()
+  })
+  await page.waitForFunction(() => [...document.querySelectorAll('.wb-op-item')]
+    .filter((b) => b.getAttribute('aria-checked') === 'true').length === 4, { timeout: 3000 })
+
+  // 6c) 点一个记录点 → 详情固定
+  await page.evaluate(() => {
+    const dot = document.querySelector('.wb-op-canvas svg circle[fill="#fff"]')
+    dot.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+  })
+  await page.waitForSelector('.wb-op-detail', { timeout: 3000 })
+  const detail = await page.evaluate(() => document.querySelector('.wb-op-detail').textContent)
+  check(/前一次|最早/.test(detail), `详情里没有可与前次比较的说明：${detail}`)
+
+  // 6d) 缩放滑杆：拉到 25% 仍然有线（只是窗口变窄）
+  await page.evaluate(() => {
+    const input = document.querySelector('.wb-op-slider input')
+    const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set
+    setter.call(input, '25')
+    input.dispatchEvent(new Event('input', { bubbles: true }))
+    input.dispatchEvent(new Event('change', { bubbles: true }))
+  })
+  await page.waitForFunction(() => document.querySelector('.wb-op-slider').textContent.includes('25%'), { timeout: 3000 })
+  const zoomed = await page.evaluate(() => document.querySelectorAll('.wb-op-canvas svg path').length)
+  check(zoomed >= 1, '缩放到 25% 后画布没有线了')
+  await page.screenshot({ path: join(SHOT, 'prod-view-onepage.png') })
+
   check(errors.length === 0, `控制台报错：${errors.slice(0, 3).join(' | ')}`)
 } finally {
   await browser.close()
@@ -205,4 +263,4 @@ if (fails.length) {
   for (const f of fails) console.error(`  - ${f}`)
   process.exit(1)
 }
-console.log('UI 冒烟通过：10 个视图、导入队列三态、候选带原文、确认写库、退回不写库、无控制台报错。')
+console.log('UI 冒烟通过：11 个视图、会话元素按 React 子节点渲染、一图秀 4 条上限与点选详情、导入队列三态、候选带原文、确认写库、退回不写库、无控制台报错。')

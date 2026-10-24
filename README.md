@@ -8,9 +8,9 @@
 
 先共创SPEC和候选数据关系，再交付HTML交互工作台；由用户确认对应版本/模块后，复核SCHEMA/API并实现生产功能。确认记录见docs/PROTOTYPE-REVIEW.md；模型不依赖前端Tab/流程。模板骨架不是业务已确认。
 
-## 项目当前状态（2026-10-24 · v0.3.4）
+## 项目当前状态（2026-10-24 · v0.3.5）
 
-阶段：**M0–M4 完成，G1 / G2 / G3 均已签认**；M5 开发版 81%（十视图 + 导入在界面里闭环，缺 MinerU 与设置页）、
+阶段：**M0–M4 完成，G1 / G2 / G3 均已签认**；M5 开发版 81%（十一视图 + 导入在界面里闭环，缺 MinerU 与设置页）、
 M6 自测 93%（83 条单测 + 三项 check 脚本 + 12 行真实 UI parity + 真 Chrome 冒烟）、M7 装机与市场 50%（打包与装机实测已做，缺投稿与落地页）。
 整体 90%，逐项口径见 [DEV-PLAN](docs/DEV-PLAN.md)。**尚未投稿。**
 
@@ -19,7 +19,7 @@ M6 自测 93%（83 条单测 + 三项 check 脚本 + 12 行真实 UI parity + �
 | 需求与场景 | `docs/SPEC.md`、`docs/SCENARIOS.md`（S1–S12）、`docs/PATIENT-FLOW.md`、`docs/DIFF-MATRIX.md`、`docs/HCC-DOMAIN.md` |
 | 数据模型 | `schema/0001`–`0004`（24 表 / 257 列，只增不改）+ `schema/freeze-contract.md`（逐条 sha256）+ `docs/SCHEMA-SPEC.md` |
 | HTML 原型 | `prototypes/v0.1/index.html`（`file://` 直接打开，无构建） |
-| 生产版 | `dsh/`（库 / 10 条路由 / 读模型）+ `lib/client.js`（十视图）+ `import/`（导入五段） |
+| 生产版 | `dsh/`（库 / 10 条路由 / 读模型）+ `lib/client.js`（十一视图，含一图秀）+ `import/`（导入五段） |
 | 导入链路 | `docs/IMPORT-PIPELINE.md`、`scripts/import-doc.mjs`（命令行）、界面第 10 视图「导入与候选」；通用规则已回流脚手架 29 号文档 |
 | 演示数据 | `demo/build-demo-data.mjs`（唯一来源）→ `demo/demo-data.sqlite`、`prototypes/v0.1/demo-data.js` |
 | 2026 临床库 | `research/hcc-cancer/`（34 条，逐来源终态） |

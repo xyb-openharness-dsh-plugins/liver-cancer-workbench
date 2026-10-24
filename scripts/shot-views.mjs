@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// 十个视图的截图：文档里的 parity 证据图（prod-view-*.png）都出自这里。
+// 十一个视图的截图：文档里的 parity 证据图（prod-view-*.png）都出自这里。
 //
 // 和 probe-prod-ui.mjs 的区别：probe 管断言（点一遍看行为对不对），这里只管"长得对不对"。
 // 两者共用 scripts/harness.mjs 的假宿主，避免两份外壳各自漂移。
@@ -13,7 +13,7 @@ const harness = await startHarness()
 const browser = await launchBrowser()
 
 const VIEWS = [
-  ['dash', '看板'], ['metrics', '指标分析'], ['liver', '我的肝'], ['tumor', '我的瘤'],
+  ['dash', '看板'], ['onepage', '一图秀'], ['metrics', '指标分析'], ['liver', '我的肝'], ['tumor', '我的瘤'],
   ['tx', '治疗与转化'], ['safety', '安全线'], ['nutrition', '营养与体重'],
   ['mind', '心理与家庭'], ['followup', '复诊与回顾'], ['import', '导入与候选'],
 ]
@@ -70,7 +70,7 @@ try {
     console.error('页面报错：', errors.slice(0, 3))
     process.exitCode = 1
   }
-  console.log('截图完成：10 个视图 + 2 张翻面卡 → prototypes/v0.1/')
+  console.log('截图完成：11 个视图 + 2 张翻面卡 → prototypes/v0.1/')
 } finally {
   await browser.close()
   await harness.close({ keep: process.argv.includes('--keep') })

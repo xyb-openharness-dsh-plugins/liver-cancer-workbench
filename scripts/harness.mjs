@@ -31,11 +31,11 @@ const PAGE = `<!doctype html><meta charset="utf-8">
   // 这样顶栏「AI 对话」按钮走的是真分支，而不是永远 disabled。
   const listeners = new Set();
   let currentId = null;
-  const conversationNode = document.createElement('div');
-  conversationNode.id = 'fake-conversation';
-  conversationNode.textContent = '原生会话占位（假宿主）';
-  conversationNode.style.padding = '16px';
-  conversationNode.style.fontSize = '13px';
+  // 真宿主交给面板的是 **React 元素**（内部 createPortal 挂原生会话），不是 DOM 节点：
+  //   h('div', { style:{display: hasCurrentSession ? 'contents' : 'none'} }, h(ConversationMount, ...))
+  // 0.3.4 的探针曾传 DOM 节点，于是"appendChild 挂载"这条错路被假宿主验证通过了。
+  const conversationElement = () => React.createElement('div',
+    { id: 'fake-conversation', style: { padding: '16px', fontSize: '13px' } }, '原生会话占位（假宿主）');
   window.__ModuleLoader__ = {
     load({ id, factory }) {
       const mod = factory(require);
@@ -60,7 +60,7 @@ const PAGE = `<!doctype html><meta charset="utf-8">
       window.__probeMeta__ = mounted.meta;
       document.title = mounted.meta.title;
       ReactDOM.createRoot(document.getElementById('root'))
-        .render(React.createElement(mounted.Component, { conversation: conversationNode }));
+        .render(React.createElement(mounted.Component, { conversation: conversationElement() }));
     },
   };
 </script>
@@ -78,7 +78,9 @@ export async function startHarness() {
   const dbPath = join(tmp, 'probe.sqlite')
   await copyFile(join(ROOT, 'demo/demo-data.sqlite'), dbPath)
   const db = openDatabase(dbPath)
-  const handlers = createHandlers({ getDb: () => db, version: 'probe' })
+  // dir 必须传：与 dsh/index.js 保持一致。客户端调起会话时把 health.dir 当 folder 传，
+  // 假宿主少传这一项，真机才会出现的"没有资料目录"分支反而测不到（也会把正常分支测挂）。
+  const handlers = createHandlers({ getDb: () => db, version: 'probe', dir: ROOT })
 
   const server = createServer((req, res) => {
     const url = new URL(req.url, 'http://127.0.0.1')

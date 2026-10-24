@@ -1,6 +1,6 @@
 {
   "name": "@xyb-community/liver-cancer-workbench",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "description": "面向肝细胞癌（HCC）患者与照护者的本机优先工作台：肝功能储备与肿瘤负荷双轨记录、转化治疗评估、门脉高压与肝相关安全性、HBV 家庭防护",
   "private": true,
   "type": "module",
