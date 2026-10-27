@@ -1,6 +1,6 @@
 {
   "name": "@xyb-community/liver-cancer-workbench",
-  "version": "0.3.7",
+  "version": "0.3.8",
   "description": "面向肝细胞癌（HCC）患者与照护者的本机优先工作台：肝功能储备与肿瘤负荷双轨记录、转化治疗评估、门脉高压与肝相关安全性、HBV 家庭防护",
   "private": true,
   "type": "module",
@@ -34,7 +34,8 @@
     "check:all": "npm run check && npm run test",
     "probe:ui": "node --disable-warning=ExperimentalWarning scripts/probe-prod-ui.mjs",
     "probe:primer": "node scripts/probe-disease-primer.mjs",
-    "shot:views": "node --disable-warning=ExperimentalWarning scripts/shot-views.mjs"
+    "shot:views": "node --disable-warning=ExperimentalWarning scripts/shot-views.mjs",
+    "probe:primer-ui": "node --disable-warning=ExperimentalWarning scripts/probe-primer-ui.mjs"
   },
   "dsh": {
     "bundle": {

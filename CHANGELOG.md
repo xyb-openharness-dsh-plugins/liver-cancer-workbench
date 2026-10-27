@@ -1,3 +1,43 @@
+## v0.3.8 · 2026-10-27（36 号 v2 移植进装机版 + 重新打包）
+
+v0.3.7 只把 36 号 v2 做在 `prototypes/v0.1/`（HTML 原型），装机版 `lib/client.js` 里一行没有，
+而 `package.json` 的 `files` 不含 `prototypes/` —— 装进 Desktop 就看不到疾病概要与状态卡。
+本轮把两块移植进装机版，并按装机口径重新打包。
+
+### 一、疾病概要进装机版（§2.5 指南原件可点）
+
+- 数据内联进 `lib/client.js`（`PRIMER_DATA`）：宿主不提供静态资源路由，家族里唯一已装机的
+  先例（小肺宝）也是内联，不引外部 js/css。
+- 样式取 starter `assets/patterns/disease-primer.css` 原版内联（`PRIMER_CSS`），
+  `--dp-*` 令牌在 `.wb-liver-cancer-workbench` 上映射到本项目陶土色系，不覆盖骨架结构。
+- 新增顶栏「?」入口（`wb-primer-trigger`）→ 整页视图：返回与关闭两个独立入口，
+  open 压一条 `history.state.wbPrimerOpen`，关闭与 Esc 各只退一层；关闭后焦点回触发者、
+  `.wb-body` 滚动位置复原。
+- 面板实测 20 个 `dp-link`、8 行指南表 8 个可点「原件」、`dp-miss` 红标 0 处。
+
+### 二、看板状态卡（§2.6）进装机版
+
+- 四件齐：卡头 `D+N 状态卡 · 距下次安排 N 天` / 大字 `第 N 天` / 现状行（治疗原文＋分期＋下次）/
+  出口按钮排（主按钮进当前阶段核心页 + `疾病概要：肝细胞癌是什么？`）。
+- 天数由档案日期派生：锚点取「未结束治疗的开始日 → 手术日 → 最早一次治疗 → 背景记录日」，
+  不手填；`openTasks` 里没有未来日期时写「原定 X 还没有完成记录」，不按指南间隔推算。
+- 无锚点走「待初始化」，指向导入入口，不编占位数字。
+
+### 三、修的坑
+
+- **状态卡被压扁**：`.wb-body` 是 flex column，`.sc-card` 带 `overflow:hidden`，flex 子项
+  `min-height:auto` 在 overflow 非 visible 时不生效，卡片被压到 42px 只剩卡头。
+  加 `flex:0 0 auto` 后 190px 正常。已把这个坑写成探针 P11。
+- **探针别用 `history.length` 判压栈**：`back()` 只移指针不减长度，二次 push 会截断重填，
+  长度可能原地不动。判据只能是 `history.state`。
+
+### 四、验证
+
+- 新增 `scripts/probe-primer-ui.mjs`（`npm run probe:primer-ui`）：P1–P11 + E0 共 12 条全过。
+- `npm run probe:ui`：12 个视图、一图秀、导入队列、候选确认、三档字号全过（老功能没被碰坏）。
+- `npm run check:all` 全绿；`check:wording` 31 文件 0 命中。
+- 重新打包 `xyb-community-liver-cancer-workbench-0.3.8.tgz`，装机到 Desktop profile 后实测。
+
 ## v0.3.7 · 2026-10-27（36 号 v2 补齐：指南原件可点 + 看板状态卡）
 
 用户指令：「**更新肝癌项目**」，按 starter `prompts/PRIMER-BACKFILL.md` 六步补齐。模式层直接取
