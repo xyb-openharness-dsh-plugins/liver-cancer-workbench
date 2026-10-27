@@ -55,6 +55,10 @@
   const last = (arr) => (arr && arr.length ? arr[arr.length - 1] : null);
   const mm = (d) => (d ? d.slice(5).replace('-', '/') : '—');
   const dt = (d) => (d ? d.replace(/-/g, '.') : '—');
+  // 状态卡的天数一律算出来，不手填（36 号 §2.6）。用本地日历日相减，
+  // 不走 UTC，否则晚上 8 点后「今天」会跳成明天，天数就差一天。
+  const todayISO = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+  const dayGap = (from, to) => Math.round((Date.parse(`${to}T00:00:00`) - Date.parse(`${from}T00:00:00`)) / 86400000);
 
   // ALBI = 0.66 × log10(胆红素 μmol/L) − 0.085 × 白蛋白 g/L；缺任一项不给分（NULL ≠ 0）
   function albi(r) {
@@ -171,6 +175,139 @@
   const ENCEPH_ZH = { none: '无', '1': '1 级', '2': '2 级', '3': '3 级', '4': '4 级', unknown: '未记录' };
   const INTENT_ZH = { curative: '根治意图', palliative: '姑息', conversion: '转化意图', adjuvant: '辅助', neoadjuvant: '新辅助', unknown: '未说明' };
 
+  // ---------- 看板状态卡（36 号 §2.6）----------
+  // 四件：卡头 D+N / 大字第 N 天 / 现状行 / 出口按钮排。
+  // 锚点与天数只从档案里已有的日期派生，一个都不手填：
+  //   ① 有未结束的治疗 → 这次治疗的开始日（当前阶段就是这次治疗）
+  //   ② 否则有手术记录 → 手术日（术后随访从手术日算起）
+  //   ③ 否则有初诊日 → 初诊日
+  //   都没有 → 整卡「待初始化」，指向三步初始化的第一步，不编一个日期出来。
+  function anchorOf(p) {
+    const open = p.treatments.filter((x) => !x.endedOn && x.startedOn).sort((a, b) => b.startedOn.localeCompare(a.startedOn))[0];
+    if (open) return { date: open.startedOn, label: `${MOD_ZH[open.modality] || open.modality}开始日`, note: open.regimen, kind: 'tx-open', x: open };
+    const op = p.treatments.filter((x) => x.modality === 'resection' && x.startedOn).sort((a, b) => b.startedOn.localeCompare(a.startedOn))[0];
+    if (op) return { date: op.startedOn, label: '手术日', note: op.regimen, kind: 'tx-op', x: op };
+    if (p.baseline) return { date: p.baseline, label: '初诊日', note: '', kind: 'baseline', x: null };
+    return null;
+  }
+
+  // 现状行与大字天数同源：都从锚点那一次事件里取，避免「天数按 A 算、阶段按 B 写」。
+  function phaseFromAnchor(a) {
+    if (a.kind === 'tx-open' || a.kind === 'tx-op') {
+      const x = a.x;
+      const done = !!x.endedOn;
+      const tail = a.kind === 'tx-op' && done ? ' · 术后随访' : '';
+      return {
+        name: `${MOD_ZH[x.modality] || x.modality} · ${x.regimen}`,
+        state: `${done ? '已结束' : '进行中'} · ${dt(x.startedOn)}${done ? ' → ' + dt(x.endedOn) : ' 起'} · 第 ${x.cyclesDone}/${x.cyclesPlanned} 周期 · ${INTENT_ZH[x.intent] || x.intent}${tail}`
+      };
+    }
+    return { name: '初诊 · 尚无治疗记录', state: `初诊日 ${dt(a.date)} · 来源：档案初诊日期` };
+  }
+
+  // 主按钮指向「档案里最近一次决策性事件」所在的页面：治疗开始 / 可切除性评估。
+  // 不按指南间隔推算下一步，只按已经记下来的事实往回指。
+  function latestPhase(p) {
+    const ev = [];
+    p.treatments.forEach((x) => { if (x.startedOn) ev.push({ on: x.startedOn, view: 'tx', sub: '治疗历程', cta: '看治疗历程（按次）→', kind: 'tx', x }); });
+    p.resectability.forEach((x) => { if (x.statedOn) ev.push({ on: x.statedOn, view: 'tx', sub: '转化评估', cta: '看可切除性版本链 →', kind: 'resect', x }); });
+    if (!ev.length) return null;
+    return ev.sort((a, b) => b.on.localeCompare(a.on))[0];
+  }
+
+  // 「下次」只取用户自己记下的未完成安排。没记就不写，不拿指南周期填。
+  function nextPlan(p) {
+    const undone = p.tasks.filter((x) => !x.doneOn && x.dueOn).sort((a, b) => a.dueOn.localeCompare(b.dueOn));
+    const today = todayISO();
+    const future = undone.find((x) => x.dueOn >= today);
+    if (future) return { date: future.dueOn, title: future.title, overdue: false };
+    if (undone.length) return { date: undone[0].dueOn, title: undone[0].title, overdue: true };
+    return null;
+  }
+
+  function primerButton() {
+    // aria-label 里必须出现「定义」与「趋势」：探针 P1 逐字断言这两个词。
+    return '<button type="button" data-primer-open aria-label="疾病概要：肝细胞癌是什么？定义、医学资料与指南情况、治疗全景、发展趋势">疾病概要：肝细胞癌是什么？</button>';
+  }
+
+  function stageCard(p) {
+    const a = anchorOf(p);
+    const nx = nextPlan(p);
+    const ph = latestPhase(p);
+
+    if (!a) {
+      // 空态：三步初始化。原型不写盘，第一步只做提示，不假装已经选好目录。
+      return `<section class="card stage-card is-empty" aria-labelledby="stage-card-h">
+        <span class="eyebrow" id="stage-card-h">D+N 状态卡 · 待初始化</span>
+        <div class="stage-main">
+          <div class="stage-day"><b>待初始化</b><span>档案里还没有可用于起算的日期</span></div>
+          <div class="stage-now">
+            <b>当前阶段：未记录</b>
+            <span>三步初始化：① 选资料目录 → ② 导入病历 / 化验单 → ③ 逐项核对日期</span>
+            <span class="stage-next">下次：还没有记下安排</span>
+          </div>
+        </div>
+        <div class="stage-actions">
+          <button class="stage-cta" data-action="open-store">第一步：选资料目录 →</button>
+          ${primerButton()}
+        </div>
+        <div class="card-foot">天数由档案里的日期算出，不是病程判断；一个日期都没有时，这里不写数字。</div>
+      </section>`;
+    }
+
+    const gap = dayGap(a.date, todayISO());
+    const eyebrow = gap < 0
+      ? `状态卡 · 锚点 ${dt(a.date)} 起算 · 尚未到该日期`
+      : `D+${gap} 状态卡 · ${nx ? (nx.overdue ? '距原定安排：日期已过' : (dayGap(todayISO(), nx.date) === 0 ? '下次安排：今天' : `距下次安排 ${dayGap(todayISO(), nx.date)} 天`)) : '距下次安排：待记录'}`;
+
+    const bigDay = gap < 0 ? '尚未开始' : `第 ${gap} 天`;
+
+    const now = phaseFromAnchor(a);
+    const name = now.name;
+    const state = now.state;
+
+    // 分期单独一行，两套并列不换算；都取「医生说是哪一套」的原文。
+    const bc = currentStage(p, 'BCLC');
+    const cn = currentStage(p, 'CNLC');
+    const stageBits = [];
+    if (bc) stageBits.push(`BCLC ${bc.stage}（${dt(bc.statedOn)}）`);
+    if (cn) stageBits.push(`CNLC ${cn.stage}（${dt(cn.statedOn)}）`);
+    const stageLine = stageBits.length
+      ? `分期：${stageBits.join(' · ')} · 医生记录，两套不换算`
+      : '分期：档案里还没有医生写下的分期';
+
+    const nextLine = nx
+      ? (nx.overdue
+        ? `原定 ${dt(nx.date)}（${esc(nx.title)}）· 档案里还没有完成记录`
+        : `下次：${dt(nx.date)}（${esc(nx.title)}）`)
+      : '下次：还没有记下安排';
+
+    const cta = ph
+      ? `<button class="stage-cta" data-action="go" data-view="${ph.view}" data-sub="${esc(ph.sub)}">${ph.cta}</button>`
+      : `<button class="stage-cta" data-action="go" data-view="follow" data-sub="待办与问题">看待办与问题 →</button>`;
+
+    return `<section class="card stage-card" aria-labelledby="stage-card-h">
+      <span class="eyebrow" id="stage-card-h">${esc(eyebrow)}</span>
+      <div class="stage-main">
+        <div class="stage-day">
+          <b>${esc(bigDay)}</b>
+          <span>锚点 ${dt(a.date)}（${esc(a.label)}${a.note ? ' · ' + esc(a.note) : ''} = Day 0）· 由档案日期算出，不手填</span>
+        </div>
+        <div class="stage-now">
+          <b>${esc(name)}</b>
+          <span>${esc(state)}</span>
+          <span>${esc(stageLine)}</span>
+          <span class="stage-next">${nextLine}</span>
+        </div>
+      </div>
+      <div class="stage-actions">
+        ${cta}
+        ${primerButton()}
+      </div>
+      <div class="card-foot">A 轨肝功能储备与 B 轨肿瘤负荷照旧并列，本卡不合成一个分数。天数只由档案日期相减得到，不代表病情轻重。</div>
+    </section>`;
+  }
+
   function card(title, body, opts) {
     opts = opts || {};
     return `<section class="card ${opts.cls || ''}"><div class="card-head"><div>${opts.eyebrow ? `<span class="eyebrow">${esc(opts.eyebrow)}</span>` : ''}<h2>${esc(title)}</h2></div>${opts.aside || ''}</div>${body}${opts.foot ? `<div class="card-foot">${opts.foot}</div>` : ''}</section>`;
@@ -203,6 +340,7 @@
        <span class="chip clay">CNLC <b>${esc(currentStage(p, 'CNLC') ? currentStage(p, 'CNLC').stage : '—')}</b></span>
        <span class="chip ${resect && resect.conclusion === 'resectable' ? 'teal' : 'warn'}">可切除性 <b>${esc(RESECT_ZH[resect ? resect.conclusion : 'unknown'])}</b> · 医生 ${dt(resect && resect.statedOn)}</span>
        <span class="chip">${esc(p.etiology === 'hbv' ? 'HBV 背景' : p.etiology)} · ${p.cirrhosis === 'yes' ? '临床肝硬化' : '无临床肝硬化'}</span>`)
+      + stageCard(p)
       + `<div class="track-strip">
           <div class="track-cell"><span class="dot" style="background:#2f6f66"></span><div><b>A 轨 · 肝功能储备</b><span>白蛋白 ${r.albumin} g/L · 胆红素 ${r.bilirubin} μmol/L · INR ${r.inr} · Child-Pugh ${r.childClass}</span></div></div>
           <div class="track-cell"><span class="dot" style="background:#c2703d"></span><div><b>B 轨 · 肿瘤负荷</b><span>${t.count} 个结节 · 最大 ${t.maxMm == null ? '—' : t.maxMm + ' mm'} · ${esc(t.liRads || 'LI-RADS 未记录')} · ${esc(t.vp || 'Vp 未记录')}</span></div></div>

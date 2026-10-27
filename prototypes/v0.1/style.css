@@ -111,6 +111,28 @@ small{font-size:12px;color:var(--muted)}
 .track-cell b{display:block;font-size:12.5px}
 .track-cell span{display:block;font-size:11.5px;color:var(--muted);line-height:1.55}
 
+/* 状态卡（36 号 §2.6）：卡头 D+N / 大字天数 / 现状行 / 出口按钮排 */
+.stage-card{display:flex;flex-direction:column;gap:11px;border-left:4px solid var(--clay)}
+.stage-card>.eyebrow{display:block}
+.stage-card.is-empty{border-left-color:var(--line-strong);background:#fbf8f6}
+.stage-main{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap}
+.stage-day{min-width:0;flex:0 1 320px}
+.stage-day b{display:block;font-size:28px;font-weight:600;letter-spacing:-.6px;line-height:1.15;color:var(--clay-deep)}
+.stage-day span{display:block;margin-top:4px;font-size:11.5px;color:var(--muted);line-height:1.55}
+.stage-now{min-width:0;flex:1 1 260px;padding-left:20px;border-left:1px solid var(--line)}
+.stage-now b{display:block;font-size:14.5px;line-height:1.45}
+.stage-now span{display:block;margin-top:3px;font-size:12px;color:var(--ink-2);line-height:1.55}
+.stage-now .stage-next{color:var(--muted)}
+.stage-actions{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+.stage-actions button{font-size:12.5px}
+.stage-actions .stage-cta{background:var(--clay);border-color:var(--clay);color:#fff;font-weight:600}
+.stage-actions .stage-cta:hover{background:var(--clay-deep);border-color:var(--clay-deep)}
+@media (max-width:720px){
+  .stage-day b{font-size:25px}
+  .stage-now{padding-left:0;border-left:0;border-top:1px solid var(--line);padding-top:9px;flex-basis:100%}
+  .stage-day span{max-width:none}
+}
+
 /* metric cards 3D */
 .metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;perspective:1200px}
 .metric{height:186px;position:relative;perspective:1200px;cursor:pointer;background:none;border:0;padding:0;text-align:left}
