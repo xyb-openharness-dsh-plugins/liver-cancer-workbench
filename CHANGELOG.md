@@ -1,4 +1,46 @@
+## v0.3.9 · 2026-10-27（36 号 v2 链接复验修订 + 顶栏「?」挂载 + check 接入）
+
+按 `primer-backfill-2026-10-27/AGENT-PROTOCOL.md`，用 `verify-links.mjs`（真 Chrome）逐条复验
+v0.3.8 落位的 8 条唯一链接，只保留判定为 `OK` 的地址。
+
+### 一、链接复验：4 条不合格，换可验证的同源页
+
+| 原地址 | 复验 | 处置 |
+| --- | --- | --- |
+| NHC 2024 版 PDF 直链 | `THIN`（无头浏览器读 PDF 正文为 0） | 改指**河北省卫健委转发页** `https://wsjkw.hebei.gov.cn/zcfg2/402819.jhtml`（原文通知 + PDF 附件，`OK`；143 页已本地核对） |
+| NHC 2022 版 PDF 直链 | `THIN` | 改指**河北省卫健委转发页** `https://wsjkw.hebei.gov.cn/zcfg2/385518.jhtml`（原文通知 + PDF 附件，`OK`；124 页已本地核对） |
+| BCLC 2022 update（PubMed 34801630 / PMC8866082） | `AUTH` / `THIN`（403、203） | `secondaryUrl` 改指 **BCLC 官网专业区**（`OK`），note 保留 PMID / PMCID |
+| AJCC 第 8 版（PubMed 28094848） | `AUTH`（403） | 改指 **ACS/AJCC 官方分期手册产品页**（`OK`，含第 8 版勘误） |
+| BCLC 裸域名 `https://www.bclc.cat/` | `HOMEPAGE`（§2.5 L6 不合格） | 删除与 BCLC 2022 行重复的「BCLC（官网）」表行 |
+| NCCN / CSCO（人卫社）/ WHO-IARC | `OK` | 不变 |
+
+结果：**唯一链接 7 条 / 引用 19 处**，`prototypes/v0.1/primer-data.js`、`lib/client.js`（内联 `PRIMER_DATA`）、
+`README.md`、`docs/DISEASE-PRIMER.md` 四处同源同步。未取得项照实保留：BCLC 2022 期刊原件、AJCC 原书。
+
+### 二、顶栏「?」真正挂到 `.top-actions`
+
+v0.3.8 只有状态卡副按钮 `data-primer-open`，模块 `mount()` 会接管第一个已存在的按钮而不再插顶栏；
+`index.html` 补静态 `#primer-trigger`（`?`，带完整 aria-label），现在 P1 读到的是顶栏按钮而不是卡内副按钮。
+
+### 三、check 接入
+
+- 新增 `scripts/check-primer-links.mjs`（L1–L6 通用断言，自动识别活动原型）；
+- `npm run check` 末尾追加 `&& node scripts/check-primer-links.mjs`，并加 `npm run check:primer-links` 别名。
+
+### 验收
+
+- `node scripts/check-primer-links.mjs`：21 项断言 21 通过；
+- `node scripts/probe-disease-primer.mjs --port 8182 --url http://127.0.0.1:8182/prototypes/v0.1/index.html`：**10/10 PASS**（P9 三档对齐）；
+- `node scripts/probe-primer-ui.mjs`（装机版）：**12/12 PASS**（19 链接 / 7 行表 / 红标 0）；
+- `npm run check` 退出码 0；`npm test` **111/111**。
+
+口径说明：`www.nhc.gov.cn` 对连续自动化复验会返回 `412` 风控挑战（首验 `200 OK`，人工点击正常）。
+因此两份国内指南的原件行改指**河北省卫健委转发页**（原文通知 + PDF 附件，判定 `OK`），note 里写明链接来源；
+org 仍记国家卫生健康委，页码按本地 PDF 页脚核对。
+
 ## v0.3.8 · 2026-10-27（36 号 v2 移植进装机版 + 重新打包）
+
+
 
 v0.3.7 只把 36 号 v2 做在 `prototypes/v0.1/`（HTML 原型），装机版 `lib/client.js` 里一行没有，
 而 `package.json` 的 `files` 不含 `prototypes/` —— 装进 Desktop 就看不到疾病概要与状态卡。

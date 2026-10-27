@@ -17,22 +17,21 @@
 
 肝功能储备是第一条线：白蛋白、总胆红素、INR、腹水、肝性脑病构成 Child-Pugh 的五个成分，ALBI 用白蛋白与胆红素派生；Child-Pugh 评分与分级只存医生记录，本台不重算。肿瘤负荷是第二条线：结节数目、最大径、段位、血管侵犯（Vp0–Vp4）、肝外扩散，以及 AFP / PIVKA-II；血管侵犯记的是癌栓位置，不是肿瘤大小。门脉高压是第三条独立风险线：血小板、脾大、食管胃底静脉曲张、腹水各自记录。分期体系至少三套并存：BCLC（0 / A / B / C / D）、CNLC（Ⅰa / Ⅰb / Ⅱa / Ⅱb / Ⅲa / Ⅲb / Ⅳ）、AJCC/UICC TNM（只有切除后才完整）；三套不换算，本台只记录医生说的是哪一套。
 
-**来源**：国家卫生健康委 · 原发性肝癌诊疗指南（2024 年版）·「三、肝癌的分期」（CNLC Ⅰa–Ⅳ，图 4）（2024 年版，国卫办医政函〔2024〕97 号）· [原件已取得 ↗](https://www.nhc.gov.cn/wjw/c100378/202404/910cce13164044b895101236f12093e9/files/1732871166035_91949.pdf) · 页码 P32 ｜ 国家卫生健康委 · 原发性肝癌诊疗指南（2022 年版）·「三、分期」（2022 年版，国卫办医函〔2022〕12 号）· [原件已取得 ↗](https://www.nhc.gov.cn/yzygj/c100068/202201/1f420b4185444904afe7315594b2e362/files/1732871378900_48829.pdf) · 页码 P22 ｜ BCLC · BCLC 2022 update（Reig 等，J Hepatol 2022;76(3):681-693）（2022）· [未取得原件，据 PMC 全文 ↗](https://pmc.ncbi.nlm.nih.gov/articles/PMC8866082/) · 页码待核 ｜ AJCC / UICC · AJCC Cancer Staging Manual, 8th ed.（肝细胞癌章节）（第 8 版，2017）· [未取得原件，据 PubMed 记录 ↗](https://pubmed.ncbi.nlm.nih.gov/28094848/) · 页码待核
+**来源**：国家卫生健康委 · 原发性肝癌诊疗指南（2024 年版）·「三、肝癌的分期」（CNLC Ⅰa–Ⅳ，图 4）（2024 年版，国卫办医政函〔2024〕97 号）· [原件已取得 ↗](https://wsjkw.hebei.gov.cn/zcfg2/402819.jhtml) · 页码 P32 ｜ 国家卫生健康委 · 原发性肝癌诊疗指南（2022 年版）·「三、分期」（2022 年版，国卫办医函〔2022〕12 号）· [原件已取得 ↗](https://wsjkw.hebei.gov.cn/zcfg2/385518.jhtml) · 页码 P22 ｜ BCLC · BCLC 2022 update（Reig 等，J Hepatol 2022;76(3):681-693）（2022）· [未取得原件，据 BCLC 官网 ↗](https://www.bclc.cat/default.php?q=professional-area%2Fmanagement-of-hcc.html&locale=en) · 页码待核 ｜ AJCC / UICC · AJCC Cancer Staging Manual, 8th ed.（肝细胞癌章节）（第 8 版，2017）· [未取得原件，据 ACS/AJCC 官方页 ↗](https://www.facs.org/quality-programs/cancer-programs/american-joint-committee-on-cancer/cancer-staging-systems/cancer-staging-system-products/) · 页码待核
 
 ### 医学资料规范和指南情况
 
 | 机构 | 文件 | 版本 / 年份 | 原件 | 本台的用途 |
 |---|---|---|---|---|
-| 国家卫生健康委 | 原发性肝癌诊疗指南（2024 年版） | 2024 年版（2024-03-21） | [已取得（官方 PDF，143 页）↗](https://www.nhc.gov.cn/wjw/c100378/202404/910cce13164044b895101236f12093e9/files/1732871166035_91949.pdf) | 国内分期（CNLC）与治疗各论的出处；页码按 PDF 页脚 |
-| 国家卫生健康委 | 原发性肝癌诊疗指南（2022 年版） | 2022 年版（2022-01-10） | [已取得（官方 PDF，124 页）↗](https://www.nhc.gov.cn/yzygj/c100068/202201/1f420b4185444904afe7315594b2e362/files/1732871378900_48829.pdf) | CNLC 2022 分期的原始出处；「三、分期」在 P22 |
-| BCLC | BCLC 2022 update（J Hepatol 2022;76(3):681-693） | 2022 | [未取得原件，据 PMC 全文 ↗](https://pmc.ncbi.nlm.nih.gov/articles/PMC8866082/) | 记录医生写的 BCLC 期别（0 / A / B / C / D），不换算 |
-| BCLC（官网） | BCLC 分期体系与治疗策略图 | 以打开当日页面为准 | [官网（非 PDF 原件）↗](https://www.bclc.cat/) | 仅确认分级名称，不引用推荐条文 |
-| AJCC / UICC | AJCC Cancer Staging Manual, 8th ed.（肝细胞癌章节） | 第 8 版（2017） | [未取得原件，据 PubMed 记录 ↗](https://pubmed.ncbi.nlm.nih.gov/28094848/) | 记录 pTNM 原文；只有切除后才完整 |
+| 国家卫生健康委 | 原发性肝癌诊疗指南（2024 年版） | 2024 年版（2024-03-21） | [已取得（官方 PDF，143 页；见转发页附件）↗](https://wsjkw.hebei.gov.cn/zcfg2/402819.jhtml) | 国内分期（CNLC）与治疗各论的出处；页码按 PDF 页脚 |
+| 国家卫生健康委 | 原发性肝癌诊疗指南（2022 年版） | 2022 年版（2022-01-10） | [已取得（官方 PDF，124 页；见转发页附件）↗](https://wsjkw.hebei.gov.cn/zcfg2/385518.jhtml) | CNLC 2022 分期的原始出处；「三、分期」在 P22 |
+| BCLC | BCLC 2022 update（J Hepatol 2022;76(3):681-693） | 2022 | [未取得原件，据 BCLC 官网 ↗](https://www.bclc.cat/default.php?q=professional-area%2Fmanagement-of-hcc.html&locale=en) | 记录医生写的 BCLC 期别（0 / A / B / C / D），不换算 |
+| AJCC / UICC | AJCC Cancer Staging Manual, 8th ed.（肝细胞癌章节） | 第 8 版（2017） | [未取得原件，据 ACS/AJCC 官方页 ↗](https://www.facs.org/quality-programs/cancer-programs/american-joint-committee-on-cancer/cancer-staging-systems/cancer-staging-system-products/) | 记录 pTNM 原文；只有切除后才完整 |
 | NCCN | NCCN Guidelines · Hepatobiliary Cancers | 以打开当日页面为准（2026-10-27 核对） | [未取得原件（需订阅），据指南页 ↗](https://www.nccn.org/guidelines/guidelines-detail?category=1&id=1438) | 仅作外部对照，不作为本台的分期或路径依据 |
 | CSCO | CSCO 原发性肝癌诊疗指南 2024 | 2024（ISBN 978-7-117-36792-9） | [未取得原件，据人卫社书目页 ↗](https://www.pmphmall.com/gdsdetail/653497-332094) | 仅作外部对照 |
 | WHO / IARC | WHO Classification of Tumours · Digestive System Tumours, 5th ed. | 第 5 版（2019） | [未取得原件，据 IARC 出版页 ↗](https://publications.iarc.who.int/Book-And-Report-Series/Who-Classification-Of-Tumours/Digestive-System-Tumours-2019) | 病理分类名称的出处 |
 
-指南给的是「通常怎么做」，不是「你该怎么做」。拿到原件的写「已取得」并给官方 PDF，没拿到的逐行写「据 PMC 全文 / PubMed 记录 / 书目页」，都给可点的二次来源。BCLC 与 CNLC 并存时不换算：两行并列，各自标出处，各自保留医生原话。
+指南给的是「通常怎么做」，不是「你该怎么做」。拿到原件的写「已取得」并给官方 PDF，没拿到的逐行写「据 BCLC 官网 / PubMed 记录 / 书目页」，都给可点的二次来源。BCLC 与 CNLC 并存时不换算：两行并列，各自标出处，各自保留医生原话。
 
 **来源**：见上表逐行 ｜ 本项目 · `docs/DISEASE-PRIMER.md`（原件状态与待核项台账，2026-10-27）· 本仓内部文件，无对外 URL
 
@@ -46,7 +45,7 @@
 
 以上是文献与指南里列出的手段，按病期与线序排列，**不代表任何一项适合你**。选哪一个，这一句需要问你的医生。
 
-**来源**：国家卫生健康委 · 原发性肝癌诊疗指南（2024 年版）· 治疗各论（一）～（五）（2024 年版）· [原件已取得 ↗](https://www.nhc.gov.cn/wjw/c100378/202404/910cce13164044b895101236f12093e9/files/1732871166035_91949.pdf) · 页码 P36 / P54 / P61 / P72 / P78 起 ｜ BCLC · BCLC 2022 update（2022）· [未取得原件，据 PMC 全文 ↗](https://pmc.ncbi.nlm.nih.gov/articles/PMC8866082/) · 页码待核
+**来源**：国家卫生健康委 · 原发性肝癌诊疗指南（2024 年版）· 治疗各论（一）～（五）（2024 年版）· [原件已取得 ↗](https://wsjkw.hebei.gov.cn/zcfg2/402819.jhtml) · 页码 P36 / P54 / P61 / P72 / P78 起 ｜ BCLC · BCLC 2022 update（2022）· [未取得原件，据 BCLC 官网 ↗](https://www.bclc.cat/default.php?q=professional-area%2Fmanagement-of-hcc.html&locale=en) · 页码待核
 
 ### 发展趋势
 
@@ -58,13 +57,13 @@
 - 2024-09-10 CSCO《原发性肝癌诊疗指南 2024》出版（ISBN 978-7-117-36792-9）。
 - 本台尚未完成临床试验登记平台的检索采集，暂无登记数量与阶段分布可报；补齐前不写任何数字。
 
-**来源**：国家卫生健康委 · 原发性肝癌诊疗指南（2024 年版）· 一、概述（2024 年版）· [原件已取得 ↗](https://www.nhc.gov.cn/wjw/c100378/202404/910cce13164044b895101236f12093e9/files/1732871166035_91949.pdf) · 页码 P1–P2 ｜ BCLC · BCLC 2022 update（2022）· [未取得原件，据 PMC 全文 ↗](https://pmc.ncbi.nlm.nih.gov/articles/PMC8866082/) ｜ WHO / IARC · Digestive System Tumours, 5th ed.（2019）· [未取得原件，据 IARC 出版页 ↗](https://publications.iarc.who.int/Book-And-Report-Series/Who-Classification-Of-Tumours/Digestive-System-Tumours-2019) ｜ CSCO · CSCO 原发性肝癌诊疗指南 2024（2024）· [未取得原件，据人卫社书目页 ↗](https://www.pmphmall.com/gdsdetail/653497-332094) ｜ 本项目 · docs/HCC-DOMAIN.md（2026-10-22）· 本仓内部文件，无对外 URL
+**来源**：国家卫生健康委 · 原发性肝癌诊疗指南（2024 年版）· 一、概述（2024 年版）· [原件已取得 ↗](https://wsjkw.hebei.gov.cn/zcfg2/402819.jhtml) · 页码 P1–P2 ｜ BCLC · BCLC 2022 update（2022）· [未取得原件，据 BCLC 官网 ↗](https://www.bclc.cat/default.php?q=professional-area%2Fmanagement-of-hcc.html&locale=en) ｜ WHO / IARC · Digestive System Tumours, 5th ed.（2019）· [未取得原件，据 IARC 出版页 ↗](https://publications.iarc.who.int/Book-And-Report-Series/Who-Classification-Of-Tumours/Digestive-System-Tumours-2019) ｜ CSCO · CSCO 原发性肝癌诊疗指南 2024（2024）· [未取得原件，据人卫社书目页 ↗](https://www.pmphmall.com/gdsdetail/653497-332094) ｜ 本项目 · docs/HCC-DOMAIN.md（2026-10-22）· 本仓内部文件，无对外 URL
 
 ## 开发顺序
 
 先共创SPEC和候选数据关系，再交付HTML交互工作台；由用户确认对应版本/模块后，复核SCHEMA/API并实现生产功能。确认记录见docs/PROTOTYPE-REVIEW.md；模型不依赖前端Tab/流程。模板骨架不是业务已确认。
 
-## 项目当前状态（2026-10-27 · v0.3.8）
+## 项目当前状态（2026-10-27 · v0.3.9）
 
 阶段：**M0–M6 完成，G1 / G2 / G3 均已签认**；M5 开发版 94%（十二视图 + 导入与解析在界面里闭环，唯一半分是"前端没走 `public/app.js`"的路径偏差）、
 M6 自测 100%（111 条单测 + 三项 check 脚本 + 12 行真实 UI parity + 真 Chrome 冒烟 12 视图）、

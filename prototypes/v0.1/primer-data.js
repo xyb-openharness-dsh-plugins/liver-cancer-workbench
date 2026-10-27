@@ -31,24 +31,26 @@ window.DISEASE_PRIMER = {
         {
           org: '国家卫生健康委', doc: '原发性肝癌诊疗指南（2024 年版）·「三、肝癌的分期」（CNLC Ⅰa–Ⅳ，图 4）',
           version: '2024 年版（国卫办医政函〔2024〕97 号）', original: true,
-          url: 'https://www.nhc.gov.cn/wjw/c100378/202404/910cce13164044b895101236f12093e9/files/1732871166035_91949.pdf',
-          page: 'P32'
+          url: 'https://wsjkw.hebei.gov.cn/zcfg2/402819.jhtml',
+          page: 'P32',
+          note: '河北省卫健委转发页（原文通知与 PDF 附件）；NHC 官网自动化复验遇 412 限频'
         },
         {
           org: '国家卫生健康委', doc: '原发性肝癌诊疗指南（2022 年版）·「三、分期」（CNLC Ⅱa–Ⅳ 与分期图）',
           version: '2022 年版（国卫办医函〔2022〕12 号）', original: true,
-          url: 'https://www.nhc.gov.cn/yzygj/c100068/202201/1f420b4185444904afe7315594b2e362/files/1732871378900_48829.pdf',
-          page: 'P22'
+          url: 'https://wsjkw.hebei.gov.cn/zcfg2/385518.jhtml',
+          page: 'P22',
+          note: '河北省卫健委转发页（原文通知与 PDF 附件）；NHC 官网自动化复验遇 412 限频'
         },
         {
           org: 'BCLC', doc: 'BCLC 2022 update（Reig 等，J Hepatol 2022;76(3):681-693）',
-          version: '2022', original: false, secondaryUrl: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC8866082/',
-          page: '页码待核', note: '未取得期刊原件；二次来源为 PMC 全文（PMID 34801630、PMCID PMC8866082）'
+          version: '2022', original: false, secondaryUrl: 'https://www.bclc.cat/default.php?q=professional-area%2Fmanagement-of-hcc.html&locale=en',
+          page: '页码待核', note: '未取得期刊原件；期刊页与 PMC 均被反爬拦截，二次来源取 BCLC 官网（PMID 34801630、PMCID PMC8866082）'
         },
         {
           org: 'AJCC / UICC', doc: 'AJCC Cancer Staging Manual, 8th ed.（肝细胞癌章节）',
-          version: '第 8 版（2017）', original: false, secondaryUrl: 'https://pubmed.ncbi.nlm.nih.gov/28094848/',
-          page: '页码待核', note: '未取得原书；二次来源为第 8 版总述文章的 PubMed 记录（CA Cancer J Clin 2017;67:93-99，PMID 28094848）'
+          version: '第 8 版（2017）', original: false, secondaryUrl: 'https://www.facs.org/quality-programs/cancer-programs/american-joint-committee-on-cancer/cancer-staging-systems/cancer-staging-system-products/',
+          page: '页码待核', note: '未取得原书；二次来源为 ACS/AJCC 官方分期手册产品页（含第 8 版勘误；总述文章 CA Cancer J Clin 2017;67:93-99）'
         }
       ]
     },
@@ -61,19 +63,16 @@ window.DISEASE_PRIMER = {
         head: ['机构', '文件', '版本 / 年份', '原件', '本台的用途'],
         rows: [
           ['国家卫生健康委', '原发性肝癌诊疗指南（2024 年版）', '2024 年版（国卫办医政函〔2024〕97 号，2024-03-21）',
-            { text: '已取得（官方 PDF，143 页；见通知页附件）', url: 'https://www.nhc.gov.cn/wjw/c100378/202404/910cce13164044b895101236f12093e9/files/1732871166035_91949.pdf' },
+            { text: '已取得（官方 PDF，143 页；见转发页附件）', url: 'https://wsjkw.hebei.gov.cn/zcfg2/402819.jhtml' },
             '国内分期（CNLC）与治疗各论的出处；本台页码均按这份 PDF 的页脚编号'],
           ['国家卫生健康委', '原发性肝癌诊疗指南（2022 年版）', '2022 年版（国卫办医函〔2022〕12 号，2022-01-10）',
-            { text: '已取得（官方 PDF，124 页）', url: 'https://www.nhc.gov.cn/yzygj/c100068/202201/1f420b4185444904afe7315594b2e362/files/1732871378900_48829.pdf' },
+            { text: '已取得（官方 PDF，124 页；见转发页附件）', url: 'https://wsjkw.hebei.gov.cn/zcfg2/385518.jhtml' },
             'CNLC 2022 分期的原始出处；「三、分期」在 P22，分期图在 2022 版里是「图 3」'],
           ['BCLC', 'BCLC 2022 update（Reig 等，J Hepatol 2022;76(3):681-693）', '2022',
-            { text: '未取得原件，据 PMC 全文', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC8866082/' },
-            '记录医生写的 BCLC 期别（0 / A / B / C / D），不换算'],
-          ['BCLC（官网）', 'BCLC 分期体系与治疗策略图', '以打开当日页面为准',
-            { text: '官网（非 PDF 原件）', url: 'https://www.bclc.cat/' },
-            '仅用于确认分期体系的分级名称，不引用其推荐条文'],
+            { text: '未取得原件，据 BCLC 官网', url: 'https://www.bclc.cat/default.php?q=professional-area%2Fmanagement-of-hcc.html&locale=en' },
+            '记录医生写的 BCLC 期别（0 / A / B / C / D），不换算；官网页仅用于确认分级名称'],
           ['AJCC / UICC', 'AJCC Cancer Staging Manual, 8th ed.（肝细胞癌章节）', '第 8 版（2017）',
-            { text: '未取得原件，据 PubMed 记录', url: 'https://pubmed.ncbi.nlm.nih.gov/28094848/' },
+            { text: '未取得原件，据 ACS/AJCC 官方页', url: 'https://www.facs.org/quality-programs/cancer-programs/american-joint-committee-on-cancer/cancer-staging-systems/cancer-staging-system-products/' },
             '记录 pTNM 原文；只有切除后才完整'],
           ['NCCN', 'NCCN Guidelines · Hepatobiliary Cancers', '版本以打开当日页面为准（2026-10-27 核对）',
             { text: '未取得原件（需订阅），据指南页', url: 'https://www.nccn.org/guidelines/guidelines-detail?category=1&id=1438' },
@@ -96,8 +95,9 @@ window.DISEASE_PRIMER = {
         {
           org: '国家卫生健康委', doc: '原发性肝癌诊疗指南（2024 年版）',
           version: '2024 年版', original: true,
-          url: 'https://www.nhc.gov.cn/wjw/c100378/202404/910cce13164044b895101236f12093e9/files/1732871166035_91949.pdf',
-          page: 'P1–P2（版本沿革）、P32（分期）'
+          url: 'https://wsjkw.hebei.gov.cn/zcfg2/402819.jhtml',
+          page: 'P1–P2（版本沿革）、P32（分期）',
+          note: '河北省卫健委转发页（原文通知与 PDF 附件）；NHC 官网自动化复验遇 412 限频'
         },
         {
           org: '本项目', doc: 'docs/DISEASE-PRIMER.md（原件状态与待核项台账）',
@@ -144,12 +144,13 @@ window.DISEASE_PRIMER = {
         {
           org: '国家卫生健康委', doc: '原发性肝癌诊疗指南（2024 年版）· 治疗各论（一）外科治疗 / （二）消融治疗 / （三）经动脉介入治疗 / （四）放射治疗 / （五）系统治疗',
           version: '2024 年版', original: true,
-          url: 'https://www.nhc.gov.cn/wjw/c100378/202404/910cce13164044b895101236f12093e9/files/1732871166035_91949.pdf',
-          page: 'P36 / P54 / P61 / P72 / P78 起'
+          url: 'https://wsjkw.hebei.gov.cn/zcfg2/402819.jhtml',
+          page: 'P36 / P54 / P61 / P72 / P78 起',
+          note: '河北省卫健委转发页（原文通知与 PDF 附件）；NHC 官网自动化复验遇 412 限频'
         },
         {
           org: 'BCLC', doc: 'BCLC 2022 update',
-          version: '2022', original: false, secondaryUrl: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC8866082/',
+          version: '2022', original: false, secondaryUrl: 'https://www.bclc.cat/default.php?q=professional-area%2Fmanagement-of-hcc.html&locale=en',
           page: '页码待核', note: '仅用于对照分期与治疗策略的分组名称，未引用其条文'
         }
       ]
@@ -171,19 +172,21 @@ window.DISEASE_PRIMER = {
         {
           org: '国家卫生健康委', doc: '原发性肝癌诊疗指南（2024 年版）· 一、概述（版本沿革）',
           version: '2024 年版', original: true,
-          url: 'https://www.nhc.gov.cn/wjw/c100378/202404/910cce13164044b895101236f12093e9/files/1732871166035_91949.pdf',
-          page: 'P1–P2'
+          url: 'https://wsjkw.hebei.gov.cn/zcfg2/402819.jhtml',
+          page: 'P1–P2',
+          note: '河北省卫健委转发页（原文通知与 PDF 附件）；NHC 官网自动化复验遇 412 限频'
         },
         {
           org: '国家卫生健康委', doc: '原发性肝癌诊疗指南（2022 年版）·「三、分期」（CNLC Ⅰa–Ⅳ，图 3）',
           version: '2022 年版（国卫办医函〔2022〕12 号）', original: true,
-          url: 'https://www.nhc.gov.cn/yzygj/c100068/202201/1f420b4185444904afe7315594b2e362/files/1732871378900_48829.pdf',
-          page: 'P22'
+          url: 'https://wsjkw.hebei.gov.cn/zcfg2/385518.jhtml',
+          page: 'P22',
+          note: '河北省卫健委转发页（原文通知与 PDF 附件）；NHC 官网自动化复验遇 412 限频'
         },
         {
           org: 'BCLC', doc: 'BCLC 2022 update',
-          version: '2022', original: false, secondaryUrl: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC8866082/',
-          page: '页码待核'
+          version: '2022', original: false, secondaryUrl: 'https://www.bclc.cat/default.php?q=professional-area%2Fmanagement-of-hcc.html&locale=en',
+          page: '页码待核', note: '期刊原文页与 PMC 均被反爬拦截，二次来源取 BCLC 官网专业区'
         },
         {
           org: 'WHO / IARC', doc: 'WHO Classification of Tumours · Digestive System Tumours, 5th ed.',
