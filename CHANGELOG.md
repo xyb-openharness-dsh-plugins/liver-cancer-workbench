@@ -1,3 +1,7 @@
+## v0.3.10 · 2026-10-27（升版）
+
+仅版本号升版：VERSION、package.json、README 状态行与 CHANGELOG 对齐，无功能变更。
+
 ## v0.3.9 · 2026-10-27（36 号 v2 链接复验修订 + 顶栏「?」挂载 + check 接入）
 
 按 `primer-backfill-2026-10-27/AGENT-PROTOCOL.md`，用 `verify-links.mjs`（真 Chrome）逐条复验
